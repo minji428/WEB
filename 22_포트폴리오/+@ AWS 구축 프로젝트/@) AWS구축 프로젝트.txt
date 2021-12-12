@@ -1,0 +1,279 @@
+@ AWS 서비스 구축 프로젝트 
+
+
+1. AWS에 무료계정을 생성한다.
+
+	1-1) https://aws.amazon.com/ko/ 로 접속
+	1-2) 개인개정 및 무료 관련 설정으로 선택 (계정명과 비밀번호를 잘 기억하자!)
+		- 결제가 되는 카드가 있어야만 한다. (1$ 결제 테스트)
+	1-3) AWS console로 로그인을 한다.
+	1-4) 메뉴 우측상단 리전을 '아시아 태평양 서울'로 설정한다.	
+	
+	- 끝 -
+	
+	
+	
+2. EC2를 생성한다. ( 리눅스 서버를 생성한다. )
+
+	https://jiwontip.tistory.com/43?category=367314  ( 해당 블로그를 참조 한다. )
+	
+	2-1) 인스턴스 생성 버튼을 누른다.
+	2-2) 우분투 18.04 TLS를 선택한다.
+	2-3) 리눅스 서버의 용량을 8gb > 30gb로 변경한다. ( 30gb 까지 무료 이므로 )	
+	2-4) 태그 설정에서 해당 인스턴스의 이름을 bms로 설정한다. (중요하지 않음)
+		Name : name
+		value : bms 설정			
+	2-5) 보안그룹 설정에서 ( 굉장히 중요 )
+	
+		1. ssh    , tcp ,  22   , 0.0.0.0/0                   remote controll
+		2. http   , tcp , 80    , 0.0.0.0/0		web
+		3. orcle  , tcp , 1521  , 0.0.0.0/0		dbms
+		4. 사용자지정 , tcp , 21 , 0.0.0.0/0		ftp 
+		4. 사용자지정 , tcp , 20 , 0.0.0.0/0		ftp 
+		5. 사용자지정 , tcp , 8080 , 0.0.0.0/0		tomcat
+		
+		- 보안그룹 설정의 순서는 아무 상관없다.
+		- !!!!!! 지금은 방화벽의 접근제어가 모두 오픈인데 보안적인 이유(취약)로
+		  ssh, oracle, ftp 서비스는 교육과정이 끝나고 
+		  자신이 프로젝트를 이어서 하고 싶은 pc의 공인아이피로 잡아주어야 한다. 	
+		
+	2-6) 새로운 키 페어 생성
+		 
+		 - !!! pem 및 ppk 파일은 보관을 절대적으로 잘하여야 한다.(복사본도 여러개 생성해놓는다.)
+		
+	2-7) EC2가 잘생성되었는지 확인한다.
+	
+	2-8) 탄력적 IP(변경되지 않는 고정 IP)를 보안그룹탭에서 생성한다.
+	2-9) 탄력적 IP를 방금생성한 EC2 인스턴스에 연결하는 작업을 한다.
+	2-10) EC2인스턴스에서 탄력적 IP가 잘 연결되어있는지 확인한다.
+	
+	- 끝 -
+	
+	
+		  
+3. RDS 생성 ( 오라클 생성 )
+
+
+	3-1) RDS생성
+		
+		- https://twofootdog.tistory.com/41 ( 해당 블로그 참조 )
+		
+		- 프리티어가 가능한 버전으로 생성한다. (oracle 12)
+		- 퍼블릭 허용으로 셋팅한다. ( 원격에서 rds로 접속 가능할 수 있도록 )
+		- DB 관련정보 잘 메모하여 기억억한다.
+		
+			ex)
+			엔진 명  : bmsdev   (bms development의미)
+			아이디   :	 admin
+			비밀번호  : -----
+			포트 번호 : 1521
+			sid    : orcl
+		
+	
+	
+	3-2) sql developer를 이용하여 테이블 생성 쿼리 작성한다.
+	
+		- sql developer로 RDS에 원격접속한다.
+			> 새로운 연결정보 생성
+			sid    : orcl
+			name   : bmsdev (하고 싶은 이름)
+			이름     : admin 
+			비밀번호  : 자신의 패스워드
+			포트     : 1521
+			호스트    : rds의 엔드 포인트
+		
+		- create sequence 및
+		  create table  쿼리문 복사 & 붙여넣기 이후 실행한다.
+	
+	
+	- 끝 - 
+	
+	
+	
+4. EC2 설정
+
+	4-1) 구글에서 'putty 다운로드'를 검색하고 다운로드한뒤 설치한다.
+	4-2) puttygen을 실행하여 
+		> Load버튼 클릭  
+		> ec2에서 생성한 .pem파일을 선택하고 
+		> save private key 버튼 클릭한다.
+		
+		 .ppk확장자의 파일이 만들어 지며 이 파일로 인증하여 ec2에 로그인이 가능하다.
+		 
+	4-3) putty에서 
+		호스트 아이디 :ubuntu@ec2의 public Ip
+		> ssh > auth에서 puttygen에서 생성한 .ppk를 선택후 
+		> open버튼 클릭하여 로그인한다.
+				
+	4-4) 서버 관련 프로그램 설치 및 설정을 진행한다.
+	
+		$sudo apt-get update			// 소프트웨어 다운로드 관련 저장소 업데이트
+		$sudo apt-get upgrade			// 소프트웨어 다운로드 관련 저장소 업그레이드
+		$sudo apt-get install vim			// 편집기 설치
+		$sudo apt-get install openjdk-8-jdk		// 자바 설치
+		$sudo apt-get install tomcat8		// 톰캣 설치
+		$sudo service tomcat8 restart			// 톰캣 서비스 시작(restart도 시작에 포함)
+		$sudo service tomcat8 status			// 톰캣 서비스 상태 확인 (running)이면 OK!
+		
+		$sudo apt-get install vsftpd			// 파일 공유 서비스 설치
+		$sudo vi /etc/vsftpd.conf				// ftp설정 파일 열기
+		
+		-----------------------------------------------------
+		[무언가 잘못됬다 싶으면 esc를 누르고 :q!를 입력하여 강제 종료하고 다시 파일을 연다.]
+		
+			:set number
+		
+			i를 눌러서 편집모드로 변경
+			
+			31번 write_enble=YES			  주석해지
+			35번 local_umask=022			  주석해지
+			142번 secure_chroot_dir=/var/run/vsftpd/empty 주석
+			145번 pam_service_name=vsftpd  주석
+			149 rsa_cert ~~ 주석
+			150 rsa_pricate_key ~~ 주석
+			151 ssl_enable 주석
+			
+			esc를 눌러서 제어모드로 변경
+			:wq!						// 저장후 종료
+		
+		---------------------------------------------------------
+		
+		$sudo chmod 777 /var/lib/tomcat8		// tomcat폴더의 권한을 모든 것이 가능하도록 수정(읽기,쓰기,실행)
+		$cd /var/lib/tomcat8/					// tomcat의 관리 폴더로 이동
+		$sudo mkdir file_repo					// 이미지 파일을 저장할 폴더 생성
+		$sudo chown tomcat8.tomcat8 file_repo	// 파일의 소유자와 소유그룹을 ubuntu > tomcat으로 설정		
+		$sudo chown tomcat8.tomcat8 ./webapps/ROOT		// ROOT폴더의 소유자와 소유그룹을 root > tomcat으로 설정	
+		$sudo mkdir ./file_repo/temp			// 임시폴더 생성
+		$sudo chmod 777 -R file_repo		// file_repo폴더 포함 하위의 모든 폴더에 모든것이 가능하도록 수정(읽기,쓰기,실행)
+		$sudo chown tomcat8.tomcat8 webapps	// swebapps 소유자와 소유그룹을 root > tomcat으로 설정
+		$sudo chmod 777 webapps
+		
+		$sudo service vsftpd restart			// 파일공유 서비스 시작(restart도 시작에 포함)
+		$sudo service vsftpd status			// 파일공유 서비스 상태 확인(running)이면 OK!
+		
+		$sudo passwd ubuntu           		// 리눅스 기본생성 계정에 비밀번호 설정
+		P@ssw0rd
+		P@ssw0rd
+		
+		
+	- 끝 -
+
+	
+	
+5. ftp 서버 설정을 진행한다.
+
+	5-1) 구글에서 FILEZILA 다운로드를 검색한다.
+	5-2) 파일질라 클라이언트 다운로드 선택 후 설치  ( 어베스트[보안프로그램]가 내의도에 상관없이 설치되지 않도록 화면을 유심히 볼것 )
+	5-3) 사이트 관리자 클릭
+		> NEW SITE 클릭
+		> 프로토콜 : FTP 파일 전송 프로토콜
+		  호스트  : EC2의 퍼블릭 Ip
+		  포트   : 21
+		  암호화  : 평문 FTP만사용(보안취약)
+		  로그온 유형 : 비밀번호 묻기
+		  사용자  : ubuntu
+		  (전송설정 태그) 능동형 클릭
+		> 연결 (디렉토리 목록이 조회되면 성공)
+	
+	
+		  
+6. 소스 파일을 배포한다.
+
+	6-1) db연결설정정보 변경(기존 정보는 주석처리하고 aws의 rds로 연결한다)
+		jdbc.driverClassName=oracle.jdbc.driver.OracleDriver   (이 설정은 바뀌지 않는다.)
+		
+		#바뀐 연결정보
+		jdbc.url=jdbc:oracle:thin:@엔드포인트:1521:ORCL
+		jdbc.username=awsDB아이디		admin	
+		jdbc.password=awsDB비번		bmsadmin10
+
+		# 기존 연결정보
+		#jdbc.url=jdbc:oracle:thin:@localhost:1521:SYSTEM
+		#jdbc.username=system
+		#jdbc.password=1234
+
+	6-2) 파일 저장 경로 변경한다. 
+		- 리눅스와 윈도우가 다른 OS이다.
+		- file_repo 경로가 파일 저장경로를 배포할때 바꾸어주고 배포하여야 한다.
+	
+		- 테스트할때는 파일 저장경로를 윈도우로 설정하고 db연결정보를 로컬로 설정해야 한다. 
+		- 배포용 소스에서는 aws의 rds접속 정보로 변경하고 파일 저장경로를 변경하여 export를 하여야 한다.
+		   (이 과정에서 잊어먹는 것 및 빼먹는 것 등등 실수를 많이한다. 하지만 많이 하면서 안잊어먹게 된다.)
+			
+		
+		- export된 bms.war를 /var/lib/tomcat8/webapps 폴더에 파일질라를 이용하여 이동시킨다.
+		- putty를 이용하여 원격접속을 한후 $sudo service tomcat8 restart를 실행한다.
+
+
+		
+7. 도메인 획득
+
+	
+	https://coding-factory.tistory.com/481 > 가비아 도메인 구매 방법
+	https://sovovy.tistory.com/37 > aws 가비아 도메인 연결 방법
+
+	- www.내 도메인:8080/bms/main/main.do로 접속하면 aws를 이용한 서비스 배포가 된 것을 확인할 수 있다.
+	
+	
+	
+8. 상세 정보 수정
+
+	8-1) 포트 포워딩 작업을 진행한다. ( 80번 포트로 접속하면 8080포트로 포워딩 )
+		- putty로 원격접속 
+		- $sudo iptables -A PREROUTING -t nat -i eth0 -p tcp --dport 80 -j REDIRECT --to-port 8080
+		(80번 포트로 접속한 서비스를 8080으로 리다이렉트 시키겠다. [웹서버 접속시 > tomcat으로 연결시킨다.])
+	
+	
+	8-2) 웹서비스 접근 경로 수정하기 ( /bms/ 삭제)
+		
+		- $sudo vi /var/lib/tomcat8/conf/server.xml // 톰캣 서버 설정 파일열기 
+		
+		 <Host name="localhost"  appBase="webapps"
+				unpackWARs="true" autoDeploy="true">		// 이 밑에
+
+		
+		<Context path="" docBase="bms" reloadable="true" /> // 기록 
+															// www.도메인/bms/main.main.do가 아닌
+															// www.도메인/main/main.do로 접속하는 설정
+			
+		:wq!로 종료
+		
+		
+		- $sudo service tomcat8 restart ( 서비스 설정을 수정하였으니 서버를 재시작 )
+		
+	- 앞으로 www.도메인으로 접속가능하다.
+	
+
+	
+	
+///////////////////////////////////////////////////////////////////
+
+	지금까지는 AWS 서비스 구축 프로젝트 작업이며 앞으로는 이곳에 최신소스를 반영만 하면 된다. 
+	
+////////////////////////////////////////////////////////////////////
+	
+	1) 내 개발 피시에서 반영에 적합한 설정(db연결,파일저장경로) 수정하여 프로젝트에서 export한다.   (소스 추출)
+	2) putty로 원격접속 하여 톰캣 서비스를 종료한다. $sudo service tomcat8 stop 한다.  (서비스 종료)
+	3) filezila에서 원격접속하여 기존의 bms폴더 와 bms.war파일을 지우고 새 war파일 전송한다.	(소스 이동)
+	-----------------
+	bms 폴더가 안지워질 경우 putty로 원격접속 하여
+	$cd /var/lib/tomcat8/webapps
+	$sudo rm -rf bms
+	-------------------
+	4) $sudo service tomcat8 start한다.							(반영된 소스로 서비스 재시작)
+	
+	1,2,3)번 무한 반복 :)
+	
+	
+	- 배포 자동화 ( 젠킨슨 , aws 코드스타 , git, ant script등을 적용할 수 있다.) 
+		
+		수동으로 (서비스 종료 > 소스코드 이동 > 서비스 재시작) 하였던 작업을
+		깃 사용하듯이 서버에 배포를 자동화 할 수 있다.
+		
+	- 배포 자동화를 적용하지 않는 부분은 현재 프로젝트 교육기간이 3주 ~ 1달이었으므로 문제 될 것이 전혀 없다.
+	- 지금도 몇달치를 업무를 1달안으로 진행을 했는데 
+		만약 입사하는 회사에서 왜 배포자동화를 하지 않았냐고 컴플레인을 한다면 신입에게 과한 수준을 요구하는 회사이다.
+	- 처음 배울때 배포자동화를 바로 배우는 것이 아니라 수동으로 소스를 반영해보면서 이것이 얼마나 불편하고 
+		배포자동화의 기능이 얼마나 편하고 좋은지를 마음으로 느끼는 것도 좋은 훈련 방법중에 하나이다.
+	- 취업시기가 늦추어 진다면 기다리는 기간동안 배포자동화(가능하면 연결되어 있는 aws기술 추천) 구글링하여 한번 진행해보자.
+	

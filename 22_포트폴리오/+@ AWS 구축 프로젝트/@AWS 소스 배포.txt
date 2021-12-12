@@ -1,0 +1,22 @@
+
+
+1) 이클립스에서 
+
+	1) jdbc.properties 파일에서 DB접속 정보변경
+	2) AdminGoodsController.java에서 파일저장경로 변경
+	3) FileController.java에서 파일저장경로 변경
+
+2) 이클립스에서 export > war파일 생성
+
+3) putty로 원격 접속하여 홈디렉터리로 이동
+
+	$ cd /var/lib/tomcat8/webapps		 소스가 저장되어 있는 파일로 이동
+	$ sudo rm -rf bms*			 기존 파일들 삭제
+
+4) 파일질라로 접속하여
+
+	/var/lib/tomcat8/webapps위치에 bms.war 파일 업로드
+
+5) WAS 재시작
+
+	$ sudo service tomcat8 restart
