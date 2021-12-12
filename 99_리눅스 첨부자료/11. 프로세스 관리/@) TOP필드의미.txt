@@ -1,0 +1,87 @@
+
+첫번째 행 - 시스템의 부하율
+
+21:43:35  - 시스템의 현재시간
+up 32min - 시스템이 부팅된 후에 재부팅이나 종료 없이 현재까지 운영된 시간
+2 users   - 현재 로그인된 사용자의 수
+load average - 0.00, 0.00, 0.00 - 최근 1분, 5분 ,15분 각각의 시스템 평균 부하율 
+
+두번째 행 - 프로세스들의 종합적인 상황
+
+Tasks : 114 total - 전체 실행된 프로세스 수
+1 running - 현재 실행되고 있는 프로세스 수
+112 Sleeping - 유휴상태에 있는 프로세스 수
+0 stopped - 종료된 프로세스 수
+1 zombie - 좀비 프로세스 수
+
+세번째 행 -  CPU의 사용 및 실행상태
+
+0.0%us - 사용자가 실행시킨 프로세스의 CPU 사용율(user mode)
+0.0%sy - 시스템자체에서 사용하는 CPU사용율(system mode)
+0.0%ni - nice정책에 의해 사용되고 있는 CPU사용율(low priority user mode)
+99.3%id - 사용되지 않고 남은 CPU사용율(idle task)
+0.0%wa - 입출력 대기상태의 CPU사용율(I/O waiting)
+0.0%hi -IRQs에 사용된 CPU(servicing IRQs)
+0.07%si - soft IRQs에 사용된 CPU(servicing soft IRQs)
+0.0%st - steal 값(다른 instances 실행에 주어진 time 값)
+
+
+네번째 행 - 에서는 실제메모리의 상태
+
+255596k total - 실제메모리의 전체용량
+238908k used - 프로세스에 의해 사용되고 있는 메모리의 사용량
+16699k free - 사용되지 않고 남아있는 메모리양
+9164k buffers - 버퍼링된 메모리양
+
+다섯번째 행 - 스왑메모리의 상태
+
+522972k total - 전체 스왑메모리량
+0k used - 프로세스에 의해 사용된 스왑메모리량
+522072k free - 남아 있는 스왑메모리량
+68132k cached - 캐싱 메모리양
+
+PID - 해당 프로세스의 유일한 프로세스번호(Process ID, 키값 : A)
+USER - 프로세스를 실행시킨 사용자(User Name, 키값 : E)
+PR - 프로세스의 우선순위(Priority, 키값 : H)
+NI - 프로세의 NICE값(Nice Value, 키값 : I), Minus(-)을 가질수록 높은 우선순위를 갖고,  
+     Plus(+)을 가질수록 낮은 우선순위를 갖는다, 0값은 우선순위가 적용되지 않음을 의미
+VIRT - 해당 프로세스가 사용한 가상메모리의 총량(Virtual Image(kb), 키값 : o)
+RES - 해당프로세스의 물리적인 메모리 사용량(Resident Size(kb), 키값 :q)
+RES = CODE + DATA
+SHR - 해당 프로세스에 의해 사용된 공유메모리의 총량(Shared Mem Size(kb), 키값 : t)
+S - 해당 프로세스의 상태(Process Status , 키값 : w)를 나타내며 다음 중 하나의 값을 가진다
+* D = 중단될 수 없는 Sleep 상태의 프로세스(uninterruptible sleep)
+* R = 실행중인 프로세스(running)
+* S = 휴먼상태의 프로세스(sleeping)
+* T = Trace되거나 스톱된 프로세스
+* Z = 좀비프로세스(zombie)
+
+%CPU - 해당 프로세스의 CPU사용율 (CPU usage, 키값 : k) 
+%MEM - 해당 프로세스 사용하는 메모리 사용율 (Memory usage(RES), 키값 : n) 
+TIME+ - TIME 항목과 같지만 100분의 1초 단위로 반영하는 CPU사용시간 값을 나타냄 (CPU Time, hundredths, 키값 : M) 
+PPID - 해당 프로세스의 부모프로세스의 PID값(Parent Process Pid, 키값 : b) 
+RUSER - 해당 프로세스의 실제 소유자(Real user name)를 의미함(키값 : c) 
+UID - 해당 프로세스의 EUID(effective user ID)를 의미함(키값 : d) 
+GROUP - 해당 프로세스의 소유 그룹(Group Name, 키값 : f) 
+TTY - 시리얼포트(serial port),pty등과 같은 해당 프로세스가 사용하고 있는 장치명 (Controlling Tty, 키값 : g)
+P - 가장 최근에 사용된 CPU를 나타내는 숫자 (Last use cpu(SMP), 키값 : j) 
+SWAP - 총 가상메모리 중 스왑아웃(swapped out)된 부분 (Swapped size (kb), 키값 : p) 
+TIME - 해당 프로세스가 시작된 이후에 경과된 총 시간(CPU Time, 키값 : l) 
+CODE - 실행코드(code)에 할당된 물리적인 메모리의 총량. 
+       일반적으로 TRS(test resident set size)값으로 알려져 있다(Code size(kb), 키값 : r) 
+DATA - DATA에 할당된 물리적인 메모리의 총량,
+       일반적으로 DRS(data resident set size)값으로 알려져 있다(Data+Stack size (kb), 키값 : s) 
+nFLT - 해당 프로세스에 발생한 페이지 폴트 횟수
+       페이지폴트는 현재 존재하지 않는 가상메모리 주소공간에 read또는 write를 시도할 때에 발생한다
+      (Page Fault count , 키값 : u) 
+nDRT - 마지막으로 디스크에 저장된 이후에 변경된 페이지가 디스크에 저장되지 않은채로 
+      메모리에 남아있는 페이지 수. 아직 sync되지 않고 메모리에 남아있는 페이지를 Dirty Page라고 한다
+	  즉, nDRT는 이런 Dirty Page의 수를 의미한다. 
+	  이런 Dirty Page는 사용 하고 있는 물리적인 메모리 공간이 또 다른 가상메모리의 데이터에 의해 
+	  사용되기 전에 디스크에 저장되어야 한다
+	  (Dirty Page count , 키값 : y) 
+WCHAN - 커널 링크맵(System.map)이 가용률에 의해 이 항목의 값은 sleeping 된 프로세스의 이름 또는 주소로 표기된다
+		Running중인 프로세스 라면 이 항목의 값은 dash(-)로 표기된다 (Sleeping in Function, 키값 : y)
+Flags - 이 항목의 값은 해당 프로세스의 현재 스케줄링기호(schedling flags)를 16진수표기로 나타낸다. 이 기호는 공식적으로 <linux/sched.h>문서에 정의되어 있다
+	    (Task Flags <sched.h>, 키값 : z) 
+

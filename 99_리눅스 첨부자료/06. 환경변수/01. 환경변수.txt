@@ -1,0 +1,358 @@
+### 환경변수 ###
+
+
+	* 환경 변수
+	
+		- 시스템이 동작하는데 필요한 프로그램이나 스크립트가 참조하여 사용하는 변수
+		    
+	* 환경변수의 종류 
+	
+		1) 지역 환경 변수
+		
+		- 현재 사용하는 쉘에서만 사용할 수 있는 변수
+		
+		2) 전역 환경 변수
+		  
+		- 현재 사용하는 쉘뿐만 아니라 서브 쉘에서도 사용할 수 있는 변수
+		
+		  +@ 로그인쉘  : 로그인할때 사용하는 기본 쉘
+			 서브쉘   : 로그인쉘에서 추가로 생성한 쉘 (/bin/bash 로 진입, exit로 탈출, pstree)
+	  
+	  
+	* 지역 환경변수
+	
+		1) 변수의 값 대입
+		
+			#변수명=값		>> 공백주의
+			
+			Ex) localVar = 100      >> 에러
+				localVar=100		>> O
+		
+		2) 변수의 데이터 확인
+
+			#echo 변수명		>> 변수명만 출력
+			#echo $변수명		>> $ => $뒤의 문자가 변수임을 나타낸다.
+		  
+		3) 지역환경변수 설정확인
+
+			#set
+		
+		4) 지역환경변수 해제
+		
+			#unset 변수명
+			
+		
+		** 서버 계정 추가하기
+		
+			# useradd user1(계정명) >> passwd user1 >> user1의 패스워드 입력 >> 추가 성공
+			
+			+ 전체 세션 명령창 >> 상단메뉴 - 보기 - 작성 - 작성바 - 하단에 생성 - 모든 세션으로
+		  
+		  
+		! 실습									  
+		=========== 로그인 쉘 ===========
+		#echo GLOBAL							>> GLOBAL문자열 출력
+		#echo $GLOBAL							>> GLOBAL에 저장된 데이터 출력
+												- 없음(저장한적이 없기때문에) -
+		
+		#GLOBAL="test"							>> GLOBAL변수에 test데이터 저장
+		#echo $GLOBAL							>> GLOBAL에 저장된 데이터 출력 - test -
+		#/bin/bash								>> 서브쉘로 이동
+		============== 서브쉘 ============
+		#echo $GLOBAL							>> -없음-
+		#exit									>> 다시 로그인쉘로 이동
+		============= 로그인 쉘 ============	
+		#echo $GLOBAL							>> - test -
+		#set									>> 지역변수 확인
+		#unset GLOBAL							>> GLOBAL 변수 해제
+		#echo $GLOBAL							>> - 없음 -
+	  
+	  
+	
+	* 전역 환경변수
+	  	
+		1) 변수의 값 대입
+		
+			#export 변수명=값				   >> 공백주의
+			
+			Ex)export globalVar = 100      >> 에러
+			   export globalVar=100		   >> o
+		
+		2) 변수의 데이터 확인
+
+			#echo $변수명		>>$ => $뒤의 문자가 변수임을 나타낸다.
+		  
+		3) 전역환경변수 설정확인
+
+			#env
+		
+		4) 전역환경변수 해제
+		
+			#unset 변수명
+		  
+		  
+											  
+		! 실습									  
+		=========== 로그인 쉘 ===========
+		#echo GLOBAL						>> GLOBAL 문자열 출력
+		#echo $GLOBAL						>> GLOBAL에 저장된 데이터 출력
+												- 없음 -
+										
+		#export GLOBAL="test"				>> GLOBAL변수에 test데이터 저장
+		#echo $GLOBAL						>> - test -
+		#/bin/bash							>> 서브쉘로 이동
+		============== 서브쉘 ============
+		#echo $GLOBAL						>> - test - (전역변수의 영역은 서브쉘까지)
+		#exit								>> 다시 로그인쉘로 이동
+		============= 로그인 쉘 ============
+		#echo $GLOBAL						>> - test -
+		#env								>> GLOBAL 확인
+		#unset  GLOBAL						>> GLOBAL 변수 해제
+		#env | grep "GLOBAL"				>> GLOBAL이 없다.
+		#echo $GLOBAL						>> - 없음 -  
+	  
+
+	* PATH 변수 사용 ( 실행파일을 찾을 경로 )
+	
+		- 명령어는 절대 경로를 입력해 주어야 한다.
+		
+		! 실습
+		
+		#echo $PATH	(복사, 붙여넣기 : 우클릭)
+		/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin
+
+		#python				>> 실행 o (exit()로 종료)
+		#/usr/bin/python    >> 실행 o (exit()로 종료)
+		
+		#PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/root/bin
+															>> /usr/bin경로를 환경변수에서 제거
+		
+		#python				>> 실행 x (exit()로 종료)
+		#/usr/bin/python    >> 실행 o (exit()로 종료)
+		
+		#PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/root/bin:/usr/bin
+															>> usr/bin경로를 환경변수에 다시 추가
+
+			
+		#python				>> 실행 o (exit()로 종료)
+		#/usr/bin/python    >> 실행 o (exit()로 종료)													
+							
+		
+		#echo $PATH
+		/usr/local/sbin:/usr/local/bin:/sbin:/bin:/root/bin:/usr/bin
+		
+		#mkdir /root/pathEx				>> 테스트디렉터리 생성
+		#touch /root/pathEx/file{1..10} >> 테스트파일 생성
+		#cd /root/pathEx				>> 이동
+		#cp /bin/ls ./myls				>> ls명령어를 myls로 복사
+		
+		
+		#ls					>> o
+		#myls				>> x , command not found
+									1) 절대경로를 사용하거나
+									2) 명령어가 위치한 디렉터리가
+									   환경변수에 등록되어야 한다.
+		
+		#/root/pathEx/myls 	>> o ( 절대경로이기 때문 )
+		
+		#PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/root/bin:/usr/bin:/root/pathEx 
+		  ( #PATH=$PATH:/root/pathEx )						>> /root/pathEx경로를 환경변수에 추가
+		
+		
+		#ls					>> o
+		#myls				>> o ( 환경변수에 등록되었기 때문에 )
+		#/root/pathEx/myls  >> o
+	
+	
+	
+	* PS1 변수 사용 ( 프롬프트 구조 정보 )
+	
+		- PS1변수에서는 서식문자를 활용 할 수 있다. ( 공유폴더에서 서식문자 확인 )
+		- 서식문자를 사용해서 프롬프트 구조를 만드는 것이
+		  어렵기 떄문에 웹에서 쉽게 만들어서 사용가능하다.
+		  ( 구글 검색 -> Bash Generator -> 1에서 쓸 것을 2로 끌어와 3에서 프리뷰를 확인하고 4에서 소스를 끌어다 씀)
+		
+		
+		Ex) @)프롬프트예.txt
+		
+		초록색
+		export PS1="[\u@\[$(tput sgr0)\]\[\033[38;5;47m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$\[$(tput sgr0)\]"
+		노랑색 
+		export PS1="[\u@\[$(tput sgr0)\]\[\033[38;5;226m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$\[$(tput sgr0)\]"
+		파랑색
+		export PS1="[\u@\[$(tput sgr0)\]\[\033[38;5;51m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$\[$(tput sgr0)\]"
+	
+	
+	* TMOUT 변수 ***
+	
+		- 실무 환경에서 사용하면 유용
+		- 세션을 사용하지 않을 경우 해당 변수에
+		  설정된 값(초)동안 대기 후 세션이 종료된다.
+		  
+		Ex) TMOUT=10		>> 10초 동안 입력이 없을 경우 종료 
+			TMOUT=600		>> 10분 동안 입력이 없을 경우 종료 
+		  
+	  
+	* 로그인시에 자동으로 실행되는 스크립트***
+	  
+		1) 시스템 전체에 적용할 내용이 작성되어 있는 스크립트 (모든 사용자)
+		
+			/etc/profile
+			/etc/bashrc
+		
+		2) 특정 사용자에게만 적용할 내용이 작성되어 있는 스크립트 (각 사용자의 홈디렉터리에 숨김파일)
+			
+			~/.bash_profile		
+			~/.bashrc
+			
+			
+		! 실습
+		@root
+		#useradd user1
+		#passwd user1
+		1111
+		1111
+		
+		#useradd user2
+		#passwd user2
+		2222
+		2222
+		
+		- user1,user2로그인 
+		
+		@root , user1 , user2
+		#grep "root" /etc/passwd			>> 컬러 적용x
+		#alias grep="grep --color=auto"		>> 컬러 설정
+		#grep "root" /etc/passwd			>> 컬러 적용o
+		
+		- root , user1 , user2 재접속
+		
+		#grep "root" /etc/passwd			>> 컬러 적용x
+											>> alias나 환경변수는재 접속시에 설정값이 사라진다.
+		
+		
+		@root
+		#vi /etc/bashrc			>> 시스템 전체에 적용할 스크립트
+		--------------------
+		( 맨 하단에 추가 )
+		
+		alias grep="grep --color=auto"		  >> 컬러 설정
+		
+		:wq
+		--------------------
+		
+		@root , user1 , user2
+		#grep "root" /etc/passwd	>> 적용x
+		
+		-root , user1 , user2재 접속
+		
+		#grep "root" /etc/passwd	>> 재 접속후 모두에게 적용
+		
+		
+		
+		
+		@root , user1 , user2
+		#cd ~				>> 홈디렉터리 이동
+		
+		@root
+		#export PS1="[\u@\[$(tput sgr0)\]\[\033[38;5;47m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$\[$(tput sgr0)\]"
+		
+		@user1
+		$export PS1="[\u@\[$(tput sgr0)\]\[\033[38;5;226m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$\[$(tput sgr0)\]"
+		
+		@user2
+		$export PS1="[\u@\[$(tput sgr0)\]\[\033[38;5;51m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$\[$(tput sgr0)\]"
+		
+		
+		- 설정 적용 ( 프롬프트 색 변경 ) -
+		
+		@root , user1 , user2 재 접속
+		
+		- 설정 적용 x -
+		
+		@root
+		#vi .bashrc			>> 특정 사용자에게 적용되는 스크립트
+		-------------------
+		(맨마지막 행 추가)
+		
+		export PS1="[\u@\[$(tput sgr0)\]\[\033[38;5;47m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$\[$(tput sgr0)\]"
+		
+		:wq
+		---------------- 11/03 여기까지 확인!!!
+		
+		
+		@user1
+		$vi .bashrc			>> 특정 사용자에게 적용되는 스크립트
+		-------------------
+		(맨마지막 행 추가)
+		
+		export PS1="[\u@\[$(tput sgr0)\]\[\033[38;5;226m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$\[$(tput sgr0)\]"
+		
+		:wq
+		----------------
+		
+		
+		@user2
+		$vi .bashrc			>> 특정 사용자에게 적용되는 스크립트
+		-------------------
+		(맨마지막 행 추가)
+		
+		export PS1="[\u@\[$(tput sgr0)\]\[\033[38;5;51m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$\[$(tput sgr0)\]"
+		
+		:wq
+		----------------
+		
+		@root(aqua) , user1(yellow) , user2(yellow) 재접속
+		
+		- 설정 적용 ( 프롬프트 색 변경 ) -
+		
+		
+		
+		
+		! 아래 명령어가 로그인시에 자동으로 실행되도록 설정
+		
+		alias vi="vim"
+		alias grep="grep --color=auto"
+		alias net="vi /etc/sysconfig/network-scripts/ifcfg-eth0"
+		export PS1=내가 원하는 프롬프트 구조
+		
+		스냅샷 (환경변수 설정이후)	>> 자습할 때는 찍지 말 것
+		
+		
+		#vi /etc/bashrc
+		--------------------------------------------------------------------------------------------------------------
+		  ~ 맨 하단에 추가 ~
+		  alias vi="vim"
+		  alias grep="grep --color=auto"
+		  alias net="vi /etc/sysconfig/network-scripts/ifcfg-eth0"
+		  export PS1="[\u@\[$(tput sgr0)\]\[\033[38;5;47m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$\[$(tput sgr0)\]"
+
+		  :wq
+		---------------------------------------------------------------------------------------------------------------
+
+		+@
+		
+		#yum install -y man
+		#yum install -y vim
+		#yum install -y xz
+		#yum install -y lrzsz
+		
+		#vi /etc/vimrc
+		------------------------
+		-맨 하단에 추가-
+		
+		set number
+		
+		:wq
+		------------------------
+
+			
+		  VMware->Server-A태그(우클릭)-> snapshot
+		  -> take a snapshot(환경변수 설정이후)	  
+		  
+	
+	
+	
+	
+	
+	

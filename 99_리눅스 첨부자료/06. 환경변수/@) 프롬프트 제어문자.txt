@@ -1,0 +1,53 @@
+         \a     ASCII 종소리 문자(07)
+         \d     "요일  달  날짜" 형식의 날짜 표시
+               (예 : "Tue May 26")
+         \e     ASCII의 escape 문자 (033)
+         \h     첫번째 "." 까지의 hostname
+         \H     hostname
+         \n     새로운 줄(줄 바꾸기)
+         \r     carrage return
+         \s     쉘의 이름, $0 의 basename
+               (마지막 slash의 다음에 따라오는 부분)
+         \t     24-시간으로 현재 시각, HH:MM:SS(시:분:초) 형식 
+         \T     12-시간으로 현재 시각, HH:MM:SS(시:분:초) 형식 
+         \@     12-시간으로 현재 시각, 오전/오후 형식 
+         \u     현재 사용자의 username
+         \v     bash의 버전(예: 2.00)
+         \V     bash의 배포, 버전 + 패치수준
+               (예 : 2.00.0)
+         \w     현재 작업 디랙토리 
+         \W     현재 작업 디랙토리의 basename
+         \!     현재 명령어의 history 번호 
+         \#     현재 명령어의 command 번호 
+         \$     유효한 UID가 0 이면 # 를, 그렇지 않으면 $ 을 표시 
+         \nnn   8 진수 nnn에 해당하는 문자 
+         \\     backslash
+         \[     터미널 조정 sequence를 프롬프트에 끼워 넣기 위해 
+               사용될 수 있는 non-printing 문자의 시작
+         \]     non-printing 문자의 끝
+
+
+0;30 : Black
+0;34 : Blue
+0;32 : Green
+0;36 : Cyan
+0;31 : Red
+0;35 : Purple
+0;33 : Brown
+0;34 : Blue
+0;32 : Green
+0;36 : Cyan
+0;31 : Red
+0;35 : Purple
+0;33 : Brown
+\e[ : Start color scheme
+x;y : Color pair to use (x;y)
+$PS1 : is your shell prompt
+\e[m : Stop color scheme
+만약 프롬프트를 모두 빨간 색으로 하고 싶으면 다음과 같이 하면 된다.
+
+export PS1="\e[0;31m[\u@\h \W]\$ \e[m "
+
+
+
+

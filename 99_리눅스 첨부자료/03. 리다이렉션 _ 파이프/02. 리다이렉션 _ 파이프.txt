@@ -1,0 +1,165 @@
+### 리다이렉션 & 파이프 ###
+
+
+
+	* 파일 디스크립터 ( File Descriptor , fd )
+	
+	- 명령어를 사용한다는 것은 명령어 파일을 실행하여
+	  커널에게 처리해야 할 작업을 요청하는 것이다. 즉 프로세스 ( Process )를 생성한 것이다.	  
+	- 리눅스에서 프로세스가 만들어지면 해당 프로세스는 파일 디스크립터를 생성한다.
+    - 파일디스크립터는 "파일 기술자"라고도 부르며 , 데이터의 출입구 역할을 한다. 
+	- 프로세스의 출력을 다른 프로세스에 입력하거나 , 파일 또는 터미널등으로 출력하는데 사용한다.
+	
+	***
+	표준 입력 0 stdin
+	표준 출력 1 stdout
+	표준 에러 2 stderr
+	***
+	
+	
+	
+	* 리다이렉션  ( redirection )
+	
+		- 표준 입력과 표준 출력의 방향을 재 지정하는 방법
+		
+	
+		1) 출력 리다이렉션
+		
+			- 표준 출력 fd/1은 생략이 가능하다.
+		
+			#[명령어] 1> [파일]
+			
+			#grep "root" /etc/passwd			>> 결과 확인
+			#grep "root" /etc/passwd 1> file1	>> 결과를 file1에 저장
+			#cat file1							>> 확인
+			
+			#grep "root" /etc/passwd			>> 결과 확인
+			#grep "root" /etc/passwd > file2	>> [1]생략 가능
+			#cat file2							>> 확인
+
+			#grep "root" /etc/passwd			
+			#grep "root" /etc/passwd 1 > file3	>> 띄어쓰기 주의 (x)
+			
+		
+				- 기존에 파일이 없다면 생성을 해주지만 , 기존의 존재하는 파일을 지정하면
+				  출력의 결과가 파일안으로 저장되어 덮어쓰기가 된다.
+
+				
+				
+			+@	파일 출력 덮어쓰기 관련 issue
+			set -o noclobber    >> 덮어쓰기를 방지하는 기능을 활성화
+			set +o noclobber   >> 덮어쓰기를 방지하는 기능을 비활성화
+		
+			#echo "Fun Linux" > clobberEx		>> Fun Linux를 clobberEx파일에 저장
+			#cat clobberEx
+			
+			#echo "Excellent Linux" > clobberEx  >> 덮어쓰기 가능
+			#cat clobberEx
+			
+			#set -o noclobber					>> 덮어쓰기 방지
+			
+			#echo "Fun Linux" > clobberEx		>> 덮어쓰기 불가
+			
+			#set +o noclobber					>> 덮어쓰기 방지 해제
+		
+			#echo "Fun Linux" > clobberEx		>> 덮어쓰기 가능
+			
+			#cat clobberEx
+	
+	
+		2) 추가 리다이렉션(이어 쓰기)
+		
+			- 기존파일 내용하단에 출력의 결과가 추가되는 형태
+			- 파일이 없으면 새로 생성 , 
+			  파일이 있으면 기존의 내용에 덧붙임
+			  
+			#명령어 >> 파일  
+			  
+			#cat /etc/resolv.conf		#nameserver 8.8.8.8
+										 nameserver 8.8.4.4										 
+			#echo "nameserver 168.126.63.1" > /etc/resolv.conf
+			
+			#cat /etc/resolv.conf		#nameserver 168.126.63.1
+
+			#echo "nameserver 8.8.8.8" > /etc/resolv.conf
+			
+										#nameserver 8.8.8.8
+						
+			#echo "nameserver 8.8.4.4 >> /etc/resolv.conf
+			  
+										#nameserver 8.8.8.8
+										 nameserver 8.8.4.4
+		
+		
+		
+		
+		3) 입력 리다이렉션
+		
+			#[명령어] 0< [파일]
+			
+			- 표준 입력을 의미하는  fd/0은 생략이 가능하다.
+			
+			#ex) cat 0< /etc/passwd	>>아래의 3명령어가 동일
+			#ex) cat < /etc/passwd
+			#ex) cat /etc/passwd
+		
+			
+			퀴즈 - (1)  #sort < a.txt > b.txt 해당 명령어의 결과는?
+		
+						=> a.txt를 sort명령어를 통해서 정렬한 결과가  b.txt에 저장된다.
+				
+				  (2) #cat < a.txt > b.txt 해당 명령어의 결과는?
+					 
+						=> a.txt를 cat명령어를 통해서 출력되는 결과가 b.txt에 저장된다.
+						   (#cp a.txt b.txt와 동일 )
+
+			
+			
+		4) 오류 다이렉션
+
+			#[명령어] 2> [파일]
+			
+			- 의도적으로 에러메세지를 화면에 출력하고 싶지 않을 때 사용한다.
+			- 표준 에러 fd/2의 결과를 파일에 저장하는 형태 (2 생략 불가)
+			
+		
+			#cd ~ 								>> 홈디렉터리로 이동
+			#mkdir /test1/test2					>> error 발생
+			#mkdir /test1/test2 1> errorLog		>> 저장 x
+			
+			#mkdir /test1/test2 2> errorLog		>> error 메세지 저장
+			
+			
+	
+	* 파이프 ( Pipe )
+		
+			- 프로세스와 프로세스를 연결시키는 방식
+			- shift + \     -> |
+			
+			# [명령어1] | [명령어2]		>>명령어1의 출력을 다음 명령어인 명령어2의 입력으로 전달한다.
+			# [명령어1] | [명령어2] | ... [명령어 n] 
+			
+			
+			#more /etc/serivces
+			#cat -n /etc/services | more
+	
+	
+	
+			Ex)
+				(1)   #cat /etc/services | grep udp | wc -l
+		
+					-> /etc/services파일에 udp라는 문자열이 들어간 라인의 수를 확인
+		
+				(2)	 #cat /etc/services | grep tcp | head -1
+			
+					-> /etc/services파일에 tcp라는 문자열이 들어간 가장 첫번째 줄을 확인
+			  
+				(3)	 #cat /etc/services | grep tcp | tail -1
+			
+					-> /etc/services파일에 tcp라는 문자열이 들어간 가장 마지막 줄을 확인
+			
+				(4)	 #cat /etc/passwd | sort > /root/passwd.txt
+
+					-> /etc/passwd파일의 내용을 출력하고  출력의 결과를 알파벳 기준으로  
+					정렬한 내용을 /root/passwd.txt파일로 저장
+

@@ -1,0 +1,23 @@
+Mount - 현재 시스템 마운트 정보확인
+mount [장치이름] [마운트 포인트]
+mount -t [유형] -o [옵션] [장치이름] [마운트 포인트]
+
+defaults -rw, suid, dev, exec, auto, nouser, async 속성을 모두 가짐
+auto - 부팅시 자동 마운트
+noauto - 부팅시 자동마운트 안함
+dev- 파일시스템 상의 문자, 블럭 특수 장치를 해석.
+nodev -파일시스템 상의 문자, 블럭 특수 장치를 해석 하지 않음.
+exec -바이너리 실행파일이 실행되는 것을 허용.
+noexec -바이너리 실행파일이 실행되는 것을 허용 안함.
+(/tmp 디렉토리와 같이 신뢰할 수 없는 사용자도 접근할 수 있는 경우에 보안 향상)
+suid - setuid, setgid 의 사용을 허용
+nosuid - setuid, setgid의 사용을 거부
+ro -읽기 전용 (read-only)
+rw - 읽기/쓰기 (read/write) 가능
+async - 파일시스템에 대한 I/O가 비동기적으로 이뤄지게 함.
+sync - 파일시스템에 대한 I/O가 동기적으로 이뤄지게 함.
+user - 일반 계정 사용자들도 마운트 할 수 있게 허용
+nouser - 일반 계정 사용자가 마운트할 수 없음 (즉, root만 mount 가능)
+noatime - 파일 접근시간을 업데이트하지 않는다.
+(메일 스풀이나 로그와 같이 I/O가 많은 파일시스템에 유용)
+remount -이미 마운트된 파일시스템을 다시 마운트.

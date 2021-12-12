@@ -1,0 +1,232 @@
+### NFS ( Network File System ) ###
+
+
+
+
+	* NFS
+	
+	
+		- 네트워크를 통해 공유된 원격지 호스트에 자원(파일 시스템)을
+		  로컬 호스트에 마운트하여 파일을 공유하는데 사용되는 프로그램
+		 
+		 
+		
+		/etc/exports
+		
+		- nfs서버 설정 파일이며 , nfs 서버에서 공유하는
+		 디렉터리정보와 옵션을 정의하기 위해 사용된다.	
+			
+			
+			
+		/etc/fstab
+		
+		- 부팅후에도 nfs로 공유한 디렉터리를 사용하기 위한 파일
+		
+		
+		
+		/etc/sysconfig/nfs
+		
+		- nfs 서버에서 사용하는 프로그램들의 포트 정보가 
+		  저장되어 있는 파일
+	
+	
+	
+	! 서버 구축
+	
+	#yum -y install nfs-utils		// NFS패키지 설치
+	#mkdir /var/server_share	    // 서버에서 공유할 디렉터리 생성
+	#chmod 777 /var/server_share	// 모든 권한을 추가하여 접근이 가능하도록 설정
+	
+	
+	#vi /etc/exports
+	[공유디렉터리경로] [접근을허용할 IP/Network주소](옵션1,옵션2)
+	------------------------------------------------------------
+	/var/server_share 100.100.100.0/24(rw,sync,no_root_squash,no_all_squash)
+	
+	:wq!
+	------------------------------------------------------------
+	
+		rw : 공유 디렉터리에 대한 읽기,쓰기를 허용
+		sync : 공유디렉터리에 변경이 있을때 , 변경사항을 즉시 동기화
+		no_root_squash : 클라이언트에서 root계정으로 접근할 때
+						 서버 root계정과 동일하게 인식
+		(root_squash : 클라이언트에서 root계정으로 접근할 때
+						서버는 해당 root를 계정을 nfsnobody계정으로 인식 )
+		
+		
+		no_all_squash : 각 사용자의 권한을 공유디렉터리에서도 적용한다.
+		
+		(all_squash) : 각 사용자의 권한을 공유디렉터리에서 적용하지 않는다. (nfsnobody)
+		
+	
+	+@ exportfs
+	
+		- nfs서버 데몬을 다시 시작하지 않고 공유 목록(/etc/exports)의
+		 변경사항을 적용시킬 수 있는 명령어
+	
+		-r : /etc/exports 파일 적용
+		-v : 현재 공유하고 있는 디렉터리 정보 출력
+	
+		
+		
+		
+		
+	#vi /etc/sysconfig/nfs
+	----------------------
+	하단에 아래 내용추가
+	
+	MOUNTD_PORT=4000
+	LOCKD_TCPPORT=4001
+	LOCKD_UDPPORT=4001
+	
+	:wq
+	----------------------
+	
+	#service rpcbind start	
+	#service nfs start
+	
+	//rpc( Remote Procedure Call )
+	
+		네트워크로 연결되어있는 다른 컴퓨터에 동작중인 프로그램에
+		서비스를 요청할때 사용하는 프로토콜
+		
+	// 데몬의 동작 순서가 중요
+	
+		NFS서비스는 RPC기반으로 동작하기 때문에,
+		RPC데몬이 먼저 동작하고 있어야 NFS 서비스를 정상적으로
+		실행할 수 있다.
+	
+	(#service iptables stop)
+	(#setenforce 0)
+		
+		
+	#rpcinfo -p	
+	
+		rpc기반으로 동작하는 nfs가 사용하는 프로그램 및 해당 포트번호 확인
+		
+		
+		1) portmapper ( 111번 포트 )
+		
+		- rpc프로그램들이 각 지정된 포트를 사용하도록 한다.
+		
+		2) mountd ( ???번 포트 )
+		
+		- nfs 클라이언트가 마운트 요청시 /etc/exports 파일의 설정에 따라
+		  마운트 정보를 제공하는 프로그램
+		
+		3) nfs ( 2049번 포트 )
+		
+		- 연결된 디렉터리를 읽기/쓰기 등의 작업을 수행할 수 있는
+		  환경을 제공하는 프로그램
+		
+		4) nlockmgr ( ??? 포트 )
+		
+		- 클라이언트가 사용하는 파일을 Lock(잠금)설정을 통해
+		  다른 사용자가 동시에 파일을 사용할 수 없도록 하는 프로그램
+		
+		
+		
+	! 서비스 이용
+		
+	@Client_Linux
+	
+	(#service iptables stop)
+	(#setenforce 0)
+	
+	#yum install -y nfs-utils		//showmount명령어를 사용할 목적으로 설치
+	#showmount -e 100.100.100.100   //100.100.100.100이 공유하고 있는 디렉터리 정보 확인 
+		
+		Export list for 100.100.100.100:
+		/var/server_share 100.100.100.0/24
+		
+	#mkidr /mnt/client_share		//mount할 디렉터리 생성
+	
+	#mount -t nfs 100.100.100.100:/var/server_share /mnt/client_share
+	
+	//Server가 제공한 /var/server_share 디렉터리를
+	  /mnt/clinet_share에 연결시킨다.
+	
+	
+		Server-A						Client-Linux
+	 /var/server_share				 /mnt/client_share
+
+					<-- 동기화 -->
+		A 파일							A 파일
+		B 디렉터리						B 디렉터리
+			
+	#df -h									//마운트 확인
+	
+	#cd /mnt/client_share					
+	#touch file{1..100}						//테스트용 파일 생성
+	
+	@Server-A 
+	#ls /var/server_share					//동기화 확인
+	
+	
+	
+	! 확인 사항
+	
+	@Client-Linux
+	
+	#reboot
+	
+	#df -h							//마운트 해제
+	
+	#mount -t nfs 100.100.100.100:/var/server_share /mnt/client_share
+	
+	#vi /etc/fstab
+	-------------------------------------
+	~~ 하단에 추가 ~~
+	
+	100.100.100.100:/var/server_share /mnt/client_share	nfs defaults 0 0
+	
+	:wq
+	--------------------------------------
+	
+	#reboot
+	(#service iptables stop)
+	
+	
+	#df -h					// 리부팅 후에도 마운트 적용
+	
+	
+	
+	@Server
+	
+	#service rpcbind stop		// 서비스 정지
+	#service nfs stop			// 서비스 정지
+	
+	@Client_Linux
+	#reboot			
+	
+	//NFS서버가 동작하지 않을때 Client가 부팅시에 NFS연결을
+	  요청하면 장시간동안 부팅이 되지 않는 문제가 있다.
+	
+	#df -h						// 마운트 x
+	
+
+	#vi /etc/fstab
+	---------------------------------------------------
+	(수정o, 추가x)
+	100.100.100.100:/var/server_share /mnt/client_share	nfs defaults,bg 0 0
+	
+	:wq
+	---------------------------------------------------
+	
+	// 부팅시에 해당 내용을 백그라운드로 진행하여,
+	   운영체제가 실행된 후에 연결을 지속적으로 요청한다.
+	   
+	#reboot   							// 바로 로그인
+	#ps -ef | grep mount				// 백그라운드에서 계속 실행중
+	
+	
+	@Server-A
+	#service rpcbind start				// 서비스 시작
+	#service nfs start
+	
+	
+	@Cleint-Linux
+	#df -h								// 마운트 적용
+	#ps -ef | grep mount				// 요청 프로세스 종료
+	
+	

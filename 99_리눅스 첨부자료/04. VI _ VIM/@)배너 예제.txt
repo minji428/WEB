@@ -1,0 +1,14 @@
+
+예제 1
+
+Welcome to Server-A 
+All connections are monitored and recorded
+Disconnect IMMEDIATELY if you are not an authorized user!
+
+예제 2
+
+Admin may monitor and disclose information on or about this system, 
+and you should have no expectation of privacy in using it.
+
+Your continued use of the system constitutes agreement to these terms. 
+If you do not agree, please disconnect immediately.

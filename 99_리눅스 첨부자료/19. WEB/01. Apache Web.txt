@@ -1,0 +1,493 @@
+﻿### 웹서버 ###
+
+
+
+	* 웹서버란? 
+	
+	- 웹 브라우저를 이용하여 WWW(World Wide Web)	을 사용하는 클라이언트에게 미리 저장된 하이퍼 텍스트를 제공하는 서버
+		Ex) Apache , IIS
+	
+	
+		+@ www(World Wide Web)
+		전 세계에 있는 네트워크에 연결된 시스템을 통해 정보를 공유할 수 있는 정보 공간
+		1989년 3월 팀 버너스 리의 제안으로 연구 및 개발 되었고 , 월드 와이드 웹 콘소시엄(W3C)이 개발하고 있다.
+	
+	* HTTP ( Hypertext Transfer Protocol )
+	
+	- 하이퍼텍스트 전송규약
+	- 웹 상에서 파일( 텍스트 , 그래픽이미지 , 비디오 , 멀티미디어 이미지등)을 주고 받는데 필요한 프로토콜
+	- web상에서 정보를 주고 받기 위한 핵심 프로토콜
+	- TCP 기반의 프로토콜이며 , Text형태의 프로토콜
+	- HTTPS( Secure Hypertext Transfer Protocol ) 사용자의 페이지 요청들과
+	웹서버에 의해 반화되는 페이지들을 암호화하고 해석한다.
+		
+	- HTTP Request : 웹 클라이언트가 웹서버에 자원을 요청하는 것
+		
+		주요 메서드 : GET	  => 자원 요청
+				  POST	  => Entity를 포함한 자원요청
+				  HEAD	  => HTTP Head 정보만 수신
+				  TRACE	  => Request의 루프백 테스트
+				  PUT	  => URL에 자원을 생성
+				  DELETE  => URL의 자원을 삭제
+				  OPTIONS => 응답가능한 HTTP 메소드를 요청
+			
+		
+	- HTTP Response : 클라이언트 요청에 대한 서버의 응답
+		
+		주요 응답코드 :  1xx => Information
+					2xx => Success
+					3xx => Redirection
+					4xx => Client Error
+					5xx => Server Error
+						
+		+@ URL Mete Character
+		
+		? 	=> URL과 Parameter의 구분을 위해 사용
+		& 	=> Parameter의 구분자
+		= 	=> Parameter 대입 연산자
+		@ 	=> 메일 계정 표시
+		% 	=> Hex값으로 표현할 경우
+		+ 	=> 공백문자
+		:>> => 프로토콜 구분자
+		#	=> 동일한 페이지 내에서 위치 이동시 사용
+	
+	
+	
+	* 웹서버 구축
+
+		@Server-B
+		setenforce 0
+		service iptables stop
+		
+		
+		1) 패키지 설치
+		#yum install -y httpd
+		
+		2) 설정파일 편집 
+		vi /etc/httpd/conf/httpd.conf
+		--------------------------------------------------------------
+		(44)  ServerTokens PROD 					>>OS -> PROD
+		(242) User  nobody							>>apache -> nobody
+		(243) Group nobody							>>apache -> nobody
+		(262) ServerAdmin admin@megaitlinux.com		>>root@localhost  -> admin@megaitlinux.com >> 관리자메일 수정
+		(276) ServerName www.megaitlinux.com:80		>>domain기록 (오류 사라짐)
+		(331) Options Indexes FollowSymLinks		>>디렉터리 리스팅
+		
+		:wq
+		--------------------------------------------------------------
+		
+		
+		( 단지 실습 )
+		#cd /var/www/html
+		#vi  index.html
+		--------------------------------------------------------------
+		<html>
+		<body>
+		<h1> sugar - maroon5 </h1>
+		<h1> My Favorite Song </h1>   
+		<h2> My Favorite Song </h2>
+		<h3> My Favorite Song </h3>
+		<h4> My Favorite Song </h4>
+		<h5> My Favorite Song </h5>
+		<h6> My Favorite Song </h6>
+		
+		<p> This is a paragraph.</p>			
+		<p> This is another paragraph. </p>
+		
+		
+		
+		</body> 
+		</html>
+		
+		:wq
+		--------------------------------------------------------------
+		#cp /etc/passwd /var/www/html/passwd
+		#cp /etc/sysconfig/network-scripts/ifcfg-eth0 /var/www/html/netconfig
+		
+		
+		
+		3) 서비스 시작
+		#service httpd start
+		#chkconfig httpd on
+
+		>> DNS가 Server-A(100.100.100.100) / 보조 Server-B(100.100.100.200)일 때
+		@Client-Linux , Client-Window(fire-fox)  (네트워크 설정에서 변경) 
+		
+		100.100.100.200 접속				o
+		100.100.100.200/passwd			o
+		100.100.100.200/netconfig		o
+		www.byunguk.com					o
+		www.byunguk.com/passwd			o
+		www.byunguk.com/netconfig		o
+		
+		
+		>> DNS가 구글(8.8.8.8) / 보조 (8.8.4.4)일 때
+		@Host OS						
+		100.100.100.200 접속				o
+		100.100.100.200/passwd			o
+		100.100.100.200/netconfig		o
+		www.byunguk.com					x	
+		www.byunguk.com/passwd			x
+		www.byunguk.com/netconfig		x
+		
+		
+		
+		@Server-B
+		
+		1) HTML 간단한 실습
+		#vi /var/www/html/index.html
+		-----------------------------------
+		<!DOCTYPE html>
+		<html>
+		<body>
+		
+		<h1> Sugar - maroon 5 </h1>   
+			
+		Do you wanna listen? <a href="https:>>www.youtube.com/watch?v=nRrXhgEqJMI"> click here </a>  </p>
+		
+		</body>
+		</html>
+
+		
+		:wq
+		------------------------------------
+		
+		@Client-Linux , Client-window(fire-fox) , Host OS 
+		100.100.100.200
+		www.byunguk.com  >> hostOS만 x
+		
+		
+		
+		2) 네이버 소스를 그대로 복사후 붙여넣기 후 웹서버에 접속
+		#vi /var/www/html/main.html
+		-----------------------------------
+		네이버 소스 복붙
+
+
+		:wq
+		------------------------------------
+		
+		@Client-Linux , Client-window , Host OS 
+		100.100.100.200
+		www.byunguk.com  >> hostOS만 x
+	
+	
+		
+	
+	* 웹서버의 설정 ( httpd.conf 참조 )
+
+
+		Alias for Web Server #  
+
+		@Server-B
+		#alias WWW='cd /var/www/html' 
+		#alias httpd.conf='vi /etc/httpd/conf/httpd.conf' 
+		#alias wlog='tail -f /etc/httpd/logs/access_log' 
+		#alias welog='tail -f /etc/httpd/logs/error_log'
+	 
+		@Server-A , Client-Window , HostOS 
+		100.100.100.250
+		www.byunguk.com
+		
+		
+		+@
+		vi /etc/httpd/conf/httpd/httpd.conf
+		-----------------------------------
+		(403번행)  index.html index.html.var >> 주석
+			DirectoryIndex passwd          >> 추가
+		
+		:wq!
+			
+		------------------------------------
+		#service httpd restart						>>설정파일 편집후 수정해 주어야 한다.
+		앞으로 
+		100.100.100.200	으로 접속하면 passwd페이지로 이동
+		
+		>> 실습을 위해 다시 원위치 후 서버 재시작
+		
+
+		vi /etc/httpd/conf/httpd/httpd.conf
+		-----------------------------------
+		(136번행) Listen 55555		>> 수정
+		
+		:wq!
+			
+		------------------------------------
+		#service httpd restart
+		앞으로 
+		100.100.100.200	으로 접속하면 안됨
+		100.100.100.200:55555으로 접속해야 됨
+		100.100.100.200:55555/login.php으로 접속해야 됨
+		
+		>> 실습을 위해 다시 80번 포트로 원위치 후 서버 재시작
+		
+		@Server B 
+		#www
+		#mkdir -p ./CentOs/6.9/{os,update,extra}/{x86_64,i386}		(웹서버 설정에서 index설정주자!)
+		#mkdir -p ./CentOs/6.10/{os,update,extra}/{x86_64,i386}
+		#touch ./CentOs/6.9/{os,update,extra}/{x86_64,i386}/test{1..10}
+		#touch ./CentOs/6.10/{os,update,extra}/{x86_64,i386}/tester{1..10}
+		#생성된 디렉터리 확인
+		
+		@Client-Window , Client-Linux , Host OS
+		100.100.100.200/CentOs					>> 목록 확인x
+		
+		#vi /etc/httpd/conf/httpd/httpd.conf 
+		--------------------------------------------------------------
+		(331번행) #Options Indexes FollowSymLinks		>> 주석
+
+		
+		:wq!	
+		--------------------------------------------------------------
+		#service httpd restart
+	 
+
+		@Client-Window , Client-Linux , Host OS
+		100.100.100.200/CentOs					>> 목록 확인x
+	 
+	 
+	 
+		.htaccess ( 부분 접근제한 사용 )
+		>> htaccess 파일은 해당 파일이 위치한 디렉토리부터 하위 디렉토리까지 적용
+		
+		#vi /etc/httpd/conf/httpd/httpd.conf 			>> 설정변경
+		--------------------------------------------------------------
+		(331번행) Options Indexes FollowSymLinks		>> 주석해지
+		
+		~맨 하단에 추가~
+		<Directory "/var/www/html/CentOs/6.10">		>> 접근제한하고 싶은 디렉터리 경로
+			Options Indexes MultiViews FollowSymLinks
+			AllowOverride ALL
+			Order allow,deny
+			Allow from all
+		</Directory>
+
+		
+		:wq!	
+		--------------------------------------------------------------
+		
+		(#htpasswd -bmc 경로 사용자 비밀번호)
+		b : 패스워드 사용
+		m : md5암호화
+		c : 생성
+		
+		#htpasswd -bmc /var/www/password webuser 111111   >> 사용자 및 비밀번호 파일 생성
+		
+		
+		#vi /var/www/html/CentOs/6.10/.htaccess		>> 접근제한하고 싶은 디렉터리에
+														.htaccess파일 생성된
+														
+		-----------------------------------------------------
+		AuthName "This Directory is protected"				>> 메세지
+		AuthType  Baic										>> 기본으로 사용
+		AuthUserFile /var/www/password						>> 패스워드 파일 경로 입력
+		require user webuser								>> 접근 유저 입력
+		
+		:wq!
+		------------------------------------------------------
+		#ls -al /var/www/html/CentOs/6.10/					>> 숨김파일 확인
+			
+		#service httpd restart								>>재시작
+		
+		@Client-Window , Client-Linux , Host OS
+		100.100.100.200/CentOs								>> 6.9aks whghl
+		100.100.100.200/CentOs/6.9							>> 목록 확인o
+		100.100.100.200/CentOs/6.10							>> 목록 확인x , 인증필요
+		
+			
+ 
+ 
+ 
+ 
+
+	* APM( apache + php + mysql ) 연동
+	
+	- 웹서버 + 웹언어 + 데이터베이스의 조합은 가장 저렴하면서도 매우 강력한 효과를 얻는 조합이다.
+	- APM을 이용하여 웹서버의 동작원리를 살펴볼 수 있다.
+	
+	@Server-B
+	#setenforce 0
+	#service iptables stop
+	
+	1) 패키지 설치
+	#yum install -y hpptd mysql mysql-server php php-mysql
+	#service httpd status
+	#service mysqld status
+	#php -v
+	
+	2) 설정파일 편집
+	- 웹서버 설정과 동일
+	
+	3) 서비스 시작
+	#service httpd start
+	#service mysqld start
+	#chkconfig mysqld on
+	#chkconfig httpd on
+	
+	
+	#vi /var/www/html/test1.php								>> test페이지 생성
+	---------------------------------------------------------------
+	<?php
+		phpinfo();
+	?>
+	:wq
+	---------------------------------------------------------------
+	
+	
+	
+	#vi /var/www/html/test2.php								>> php를 이용한 db연동 테스트
+	--------------------------------------------------------------
+	<?php
+	$db = new mysqli("localhost", "root", "1234", "test");
+	if ($db->connect_errno) die("Connect failed: ".$db->connect_error);
+	$result = $db->query("SHOW DATABASES;");
+	echo "<xmp>";
+	while ($row = $result->fetch_object()) print_r($row);
+	echo "</xmp>";
+	$result->close();
+	$db->close();
+	?>
+	
+	:wq!
+	--------------------------------------------------------------
+	
+	
+	#mysqladmin -u root password '1234'					>> root계정 비밀번호 생성
+	#mysql -u root -p									>> 로그인
+	패스워드 입력 : 1234
+	quit
+	
+	@Client-Linux
+	100.100.100.200/test1.php접속 	>> o
+	100.100.100.200/test2.php접속 	>> o	
+	
+	
+	
+	>>4) 데이터가 저장될 데이터베이스 생성
+	#mysql -u root -p									
+	mysql> create database member;			>>  member데이터베이스 생성
+	mysql> use member;						>>  member데이터베이스 사용
+	
+	>> 테이블 생성
+	mysql>  CREATE TABLE account_info (	memberSeq int(11) AUTO_INCREMENT,id varchar(30) , pwd varchar(20)  ,name varchar(10) ,addr varchar(80) ,gender varchar(10)  ,birthDay varchar(10),email varchar(20) ,PRIMARY KEY (`memberSeq`));
+	
+	mysql> select * from account_info >>데이터 조회 (비어있음)
+	mysql> quit
+	
+	#vi /var/www/html/login.php		>> 웹 화면 페이지 생성
+	--------------------------------------------------------------
+	<doctype html>
+	<html>
+	<head>
+	<title>sign up page</title>
+	</head>
+	<body>
+	<form name="join" method="post" action="insertInfo.php">
+	 <h1>input your information</h1>
+	 <table border="1">
+	  <tr>
+	   <td>ID</td>
+	   <td><input type="text" size="30" name="id"></td>
+	  </tr>
+	  <tr>
+	   <td>Password</td>
+	   <td><input type="password" size="30" name="pwd"></td>
+	  </tr>
+	  <tr>
+	   <td>Confirm Password</td>
+	   <td><input type="password" size="30" name="pwd2"></td>
+	  </tr>
+	  <tr>
+	   <td>name</td>
+	   <td><input type="text" size="12" maxlength="10" name="name"></td>
+	  </tr>
+	  <tr>
+	   <td>address</td>
+	   <td><input type="text" size="40" name="addr"></td>
+	  </tr>
+	  <tr>
+	   <td>gender</td>
+	   <td><input type="text" size="6" maxlength="2" name="gender"></td>
+	  </tr>
+	  <tr>
+	   <td>birth day</td>
+	   <td><input type="text" size="6" maxlength="8" name="birthDay"></td>
+	  </tr>
+	  <tr>
+	   <td>e-mail</td>
+	   <td><input type="text" size="30" name="email"></td>
+	  </tr>
+	 </table>
+	 <input type=submit value="submit"><input type=reset value="rewrite">
+	</form>
+	</body>
+	</html>
+		
+		
+	
+	:wq
+	-------------------------------------------------------------------
+	
+	
+	
+	#vi /var/www/html/insertInfo.php
+	---------------------------------
+	<?php
+	 $host = 'localhost';
+	 $user = 'root';
+	 $pw = '1234';
+	 $dbName = 'member';
+	 $mysqli = new mysqli($host, $user, $pw, $dbName);
+	 
+	 $id=$_POST['id'];
+	 $password=$_POST['pwd'];
+	 $password2=$_POST['pwd2'];
+	 $name=$_POST['name'];
+	 $address=$_POST['addr'];
+	 $gender=$_POST['gender'];
+	 $birthDay=$_POST['birthDay'];
+	 $email=$_POST['email'];
+	 
+	 $sql = "insert into account_info (id, pwd, name, addr, gender, birthDay, email)";
+	 $sql = $sql. "values('$id','$password','$name','$address','$gender','$birthDay','$email')";
+	 if($mysqli->query($sql)){
+	  echo 'success inserting';
+	 }else{
+	  echo 'fail to insert sql';
+	 }
+	?>
+	
+	
+	:wq!
+	-----------------------------------
+
+	@Client-Linux , Client-Window , HostOS 에서 회궝가입후 데이터베이스에 저장되어있는지 확인
+	100.100.100.200/login.php	
+
+	
+	@Server-B
+	#mysql -u root -p 
+	1234
+	
+	mysql> use member;
+	mysql> select * from account_info;			>> 데이터 입력 및 확인
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,874 @@
+### 권한 관리 ###
+
+	
+	
+	
+	
+	* 소유권 & 허가권
+	
+		- 시스템에 존재하는 모든 파일은 권한이 부여되어있다.
+		- 파일을 소유한 권한을 소유권 ( Ownership )이라고 한다.
+		- 접근을 제한할 수 있는 권한을 ( Permission ) 이라고 한다.
+	
+	
+	
+	
+	
+	* 소유권 ( Ownership )
+	
+	
+		소유권 확인 명령어
+		
+		#ls -l
+		#ll
+		
+		
+		@root
+		#cd ~
+		#touch file1
+		#ls -l | grep "file1"
+		
+					     [      소유권       ]
+		-rw-r--r--.  1     root       root      0 2018-03-27 06:15 file1	
+						  [소유계정]    [소유그룹]
+	
+		=> file1파일을 소유한 계정은 root이고 , 소유그룹은 root이다.
+		
+		@JISOO
+		#cd ~
+		#touch Test1
+		#ls -l | grep "Test1"
+		
+		-rw-r--r--. 1 JISOO BLACKPINK 0 2018-03-27 06:18 Test1
+		
+		=>Test1파일을 소유한 계정은 JISOO이고, 소유그룹은 BLACKPINK이다.
+		
+		
+		
+		
+	* 소유권 변경 - chown ( Change OWNership )
+		
+		1) 소유자만 변경
+			#chown [계정] [파일]
+		
+		2) 소유자와 그룹을 변경
+			#chown [계정]:[그룹] [파일]
+		
+		3) 소유자와 그룹을 변경
+			#chown [계정].[그룹] [파일]
+		
+		4) 그룹만 변경
+			#chown :[그룹] 파일
+		
+		5) 그룹만 변경
+			#chown .[그룹] 파일
+		
+		6) 그룹만 변경
+			#chgrp [그룹] [파일]
+		
+		
+		! 실습
+		
+		#ll | grep "file1"				>>확인
+		
+		#chown JISOO file1				>>file1의 소유자를 JISOO로 변경
+		#ll | grep "file1"				>>확인
+		
+		#chown RISA:BLACKPINK  file1	>>file1의 소유자를 RISA로 , 그룹을 BLACKPINK로 변경
+		#ll | grep "file1"				>>확인
+		
+		#chown :root file1				>>file1의 소유그룹을 root로 변경
+		#ll | grep "file1"				>>확인
+		 
+		#chown ROSE.BLACKPINK file1     >>file1의 소유자를 ROSE로 , 그룹을 BLACKPINK로 변경
+		#ll | grep "file1"				>>확인
+		
+		#chgrp root file1				>>>>file1의 소유그룹을 root로 변경
+		#ll | grep "file1"				>>확인
+	
+	
+	
+	
+	
+	
+	* 허가권 ( Permission )
+	
+		허가권 필드 확인 명령어
+		
+		#ls -l
+		#ll
+		 [ 허가권 ]
+		-rw-r--r--.  1     root       root      0 2018-03-27 06:15 file1
+
+		허가권 필드는 3개의 필드로 구성되어 있다. (맨 앞의 -는 제외하고 3글자씩 끊음)
+		
+			rw- 		r--				r--
+		소유자(User)	그룹(Group)    기타사용자(Other)
+		
+		
+		- rwx의 의미
+		
+		r ( Read )		: 읽기 권한
+		w ( Write )		: 쓰기 권한
+		x ( eXcute )	: 실행 권한
+		- (bar)			: 해당사항 없음
+		
+	
+		ex) rw- r-- r--
+		
+		rw- : 해당파일을 소유한 사용자는 해당파일을 읽고, 쓸 수 있는 권한이 있다.
+		r-- : 해당 파일을 소유한 그룹에는 읽기 권한만 있다.
+		r-- : 소유한 사용자 , 그룹도 아닌 나머지 사용자는 읽기 권한만 있다.
+		
+		
+	
+
+	
+	* 허가권 변경 - chmod
+	
+		- 해당 명령어에는 2가지 모드가 존재한다.
+		
+			1) 기호모드 		2) 숫자모드
+			
+		
+		
+		1) 기호 모드
+
+		r : 읽기 권한		 + : 권한 추가		u : User		s : SetUID, SetGID
+		w : 쓰기 권한		 - : 권한 회수		g : Group		t : sTicky bit
+		x : 실행 권한		 = : 권한 유지		o : Other		a : All
+												
+												
+												
+		2) 숫자 모드
+		
+		- 각각의 허가권 필드를 8진수(0~7)로 표기하는 방법
+		
+		
+				사용자(u)		그룹(g)		  기타사용자(o)
+				
+		기호	 	 rwx		 rwx			rwx
+		
+		2진수	 	 111		 111			111
+							
+		8진수		 421		 421			421
+		
+				  7			  7	 	         7
+		
+		
+		+@ 2진수 -> 8진수 진법변환
+		
+		 2진수		8진수
+		 000    ->    0
+		 001    ->    1
+		 010    ->    2
+		 011    ->    3
+		 100    ->    4
+		 101    ->    5
+		 110    ->    6 
+		 111    ->    7 
+	
+	
+		! 연습
+		-rwxr-x--x	-> rwx r-x --x -> 111 101 001 -> 7 5 1 -> 751
+		-r------wx	-> r-- --- -wx -> 100 000 011 -> 4 0 3 -> 403
+		--wx-w-rwx	-> -wx -w- rwx -> 011 010 111 -> 3 2 7 -> 327
+		-r--r--r--	-> r-- r-- r-- -> 100 100 100 -> 4 4 4 -> 444
+		----------	-> --- --- --- -> 000 000 000 -> 0 0 0 -> 000
+		-rw-rw-rw-	-> rw- rw- rw- -> 110 110 110 -> 6 6 6 -> 666
+		-r-xr-xr-x	-> r-x r-x r-x -> 101 101 101 -> 5 5 5 -> 555
+		-rwxrwx---	-> rwx rwx --- -> 111 111 000 -> 7 7 0 -> 770
+		-rwx------	-> rwx --- --- -> 111 000 000 -> 7 0 0 -> 700
+		-rwxr-----	-> rwx r-- --- -> 111 100 000 -> 7 4 0 -> 740
+	
+								
+
+	
+		! 실습
+		
+		@ root
+		
+		#useradd testuser1						>> testuser1 계정생성
+		#passwd testuser1
+		111
+		111
+		
+		#useradd testuser2						>> testuser2 계정생성
+		#passwd testuser2
+		111
+		111
+		
+		#useradd testuser3						>>testuser3 계정생성
+		#passwd testuser3
+		111
+		111
+		
+		#groupadd testgroup						>>testgroup 생성
+		#usermod -g testgroup testuser2			>>testuser2를 testgroup에 추가
+		
+		#groups testuser1 testuser2 testuser3	>>그룹 확인
+		[testuser2 재 로그인]
+		
+		
+		#mkdir /Practice						>>테스트할 디렉터리 생성
+		[#chmod 777 /Practice					>>모든유저에게 모든권한 추가
+		
+		
+		testuser1 , testuser2, testuser3 로그인
+		
+		@root,testuser1 , testuser2, testuser3
+		#cd /Practice
+		
+		@root
+		#mkdir testDir					
+		#chown testuser1:testgroup testDir		>>소유자와 소유그룹 변경
+		#ll										>>변경확인
+		
+		#chmod 444 testDir						>>허가권 변경
+		
+		@root,testuser1,testuser2,testuser3
+		
+		=>  		 		소유자      소유그룹   기타사용자 
+			 r(ls)		  	  O             O           O
+			 w(touch)         X	        	X			X
+			 x(cd)       	  X				X			X
+		
+		
+		
+		@root
+		#chmod 755 testDir
+		
+		
+		@root,testuser1,testuser2,testuser3
+		
+		=>  		 		소유자      소유그룹   기타사용자 
+			 r(ls)		  	  O             O           O
+			 w(touch)         O	        	X			X
+			 x(cd)       	  O				O			O	
+		
+		
+		
+		
+		@root
+		#chmod 300 testDir
+		
+		
+		@root,testuser1,testuser2,testuser3
+		
+		=>  		 		소유자      소유그룹   기타사용자 
+			 r(ls)		  	  X             X           X
+			 w(touch)         O	        	X			X
+			 x(cd)       	  O				X			X
+		
+		
+		
+		
+		@root
+		#chmod 571 testDir
+		
+		
+		@root,testuser1,testuser2,testuser3
+		
+		=>  		 		소유자      소유그룹   기타사용자 
+			 r(ls)		  	  O             O           X
+			 w(touch)         X	        	O			X
+			 x(cd)       	  O				O			O
+			 
+		+@ 직접 문제를 내시고 실습해보세요.
+		
+			
+		
+		! 실습
+		
+		#디렉터리 실습과 동일한 환경 구축
+		@root
+		#cd /Practice
+		#touch file
+		#chmod 111 file				            		>> 실행권한만 부여
+		#chown testuser1:testgroup file		>> 소유자와 소유그룹 변경
+		
+		@root , testuser1 , testuser2 , testuser3
+		#./file		>>모두 허가거부( 읽기권한이 추가적으로 필요 )
+			
+			
+		@root
+		#chmod 222 file
+			
+		@root 
+		#vi file
+		:q
+		
+		@testuser1
+		#vi file
+		:q
+		
+		@testuser2
+		#vi file
+		:q
+		
+		@testuser3
+		#vi file
+		:q
+			
+		>>허가 거부 ( 읽기권한이 추가되어야된다. )
+		
+		
+		@root
+		#chmod 444 file
+		
+		@root , testuser1 , testuser2 , testuser3
+		#cat file									>> 확인 가능
+		
+		
+		@root
+		#chmod 555 file
+		
+		@root , testuser1 , testuser2 , testuser3
+		#cat file									>> 확인 가능
+		#./file										>> 실행 가능
+		
+		
+		@root
+		#chmod 666 file
+		
+		@root 
+		#cat file							>> 확인 가능
+		#vi file							>> 편집 가능
+
+		@testuser1
+		#cat file							>> 확인 가능
+		#vi file							>> 편집 가능
+		
+		@testuser2
+		#cat file							>> 확인 가능
+		#vi file							>> 편집 가능
+		
+		@testuser3
+		#cat file							>> 확인 가능
+		#vi file							>> 편집 가능
+		
+		
+		@root
+		#chmod 777 file
+		
+		@root 
+		#cat file							>> 확인 가능
+		#vi file							>> 편집 가능
+		#./file								>> 실행 가능
+		
+		@testuser1
+		#cat file							>> 확인 가능
+		#vi file							>> 편집 가능
+		#./file								>> 실행 가능
+		
+		@testuser2
+		#cat file							>> 확인 가능
+		#vi file							>> 편집 가능
+		#./file								>> 실행 가능
+		
+		@testuser3
+		#cat file							>> 확인 가능
+		#vi file							>> 편집 가능
+		#./file								>> 실행 가능
+		
+		
+		
+		+@여러분께서 직접 문제를 내보시고 확인해보세요.
+		Ex) chmod 765 file
+			chmod 721 file
+			chmod 541 file
+	
+	
+	
+	
+	
+	
+	
+	* UMASK
+	
+		- 파일/디렉터리를 생성할때 가지게 되는 기본 허가권을 
+		  결정하는일에 기준이 되는 값
+		
+		- 디렉터리 기본 허가권 : 777
+		- 파일 기본 허가권 : 666
+		
+		- UMASK를 이용하여 파일의 기본 허가권 계산
+		
+		Ex)
+			1)
+			파일의 기본허가권 : 666
+			기본   UMASK	: 022
+			
+			2)
+			파일의 기본허가권 : 110 110 110	>> 666
+			기본 UMASK	: 000 010 010	>> 022
+			UMASK의 보수	: 111 101 101	 (보수 : 1->0 , 0->1)
+			
+			파일의 기본허가권 : 110 110 110		>> 666
+			UMASK의 보수	: 111 101 101   	>> 위와 아래의 숫자가 맞으면 1, 틀리면 0
+			----------------------------------
+			AND연산			  : 110 100 100	>> 결과
+								rw- r-- r--
+								 6   4   4
+			
+			+@ AND연산
+			
+			- 연산대상이 모두 1일때만 결과적으로 1을 반환
+			
+				1 0 1 0
+				1 1 0 0
+			-----------	
+			AND 1 0 0 0
+			
+			>>> 굳이 and 연산을 하지 않아도, 기본허가권-UMASK | 666-022=644 로 해준다
+
+			
+		Ex) 
+			1)
+			디렉터리의 기본허가권 : 777
+			기본 UMASK      : 022
+			=> 755
+
+			2)
+			디렉터리의 기본허가권 : 111 111 111		>> 777
+			기본 UMASK      : 000 010 010		>> 022
+			UMASK의 보수	  : 111 101 101		>> 755 (보수)
+			
+			3) 
+			디렉터리의 기본허가권 : 111 111 111
+			UMASK의 보수	  : 111 101 101
+			-----------------------------------
+			AND연산		  : 111 101 101
+							rwx r-x r-x
+							 7   5   5
+		
+		
+		UMASK값 변경	
+		
+		1) 일시적 변경
+		
+		 #umask [필터값]  : 필터로 사용될 기준값 설정
+		
+		
+		2) 영구적 변경
+		
+		 /etc/profile에서 umask값을 변경 ( 재부팅후부터 적용된다. )
+		
+		
+		! 실습
+		
+		#vi /etc/profile
+		-----------------------
+		64번행의 umask값(022) 수정		>> 62행의 umask 002 = 일반계정
+		
+		:wq!
+		-----------------
+
+		#umask					>>변경된 설정이 아직 적용x
+		
+		#logout
+		재접속
+		
+		#umask					>>변경된 설정이 적용
+		
+		#logout
+		재접속					>>역시 변경될 설정이 적용
+		
+		#cd /Practice/umaskTest
+		#mkdir dir4				>>rwx -wx -wx (733)
+		#touch file4			>>rw- -w- -w- (622)
+		#ll	
+	
+	
+	
+	
+	* 특수 권한 - SetUID
+	
+		- 실행파일에 적용되는 권한으로 SetUID가 설정된 파일을 
+		  실행하게 되면 해당파일을 실행한 사용자가 아닌
+		  해당 파일을 소유한 소유자의 권한으로 실행하게 된다.
+		
+		- 기호모드 u+s ,  숫자 모드 4000으로 SetUID를 설정한다.
+		
+		- SetUID를 적절하게 사용하면 시스템 운영에 많은 도움이 되지만,
+		  악용이 될 경우 root의 권한으로 프로그램이 실행되기 때문에 매우 위험할 수 있다.
+		
+		- 평소와 다른 SetUID파일이 생긴다면 , 악성프로그램일 가능성이 굉장히 높다.
+		
+		
+		
+		! 실습
+		
+		#mkdir /Practice/setuid
+		#cd /Practice/setuid
+		#touch setuid{1..3}
+		#ls
+		setuid1 setuid2 setuid3
+		
+		#chmod 4755 setuid1
+		#chmod 4655 setuid2
+		#chmod 400 setuid3
+		
+		#ll		>>>>>????? 허가권 필드에 실행권한이 있고없고???
+		-rwsr-xr-x. 1 root root 0 2018-03-30 05:42 setuid1
+		>>기존에 허가권 필드에 실행권한(x)이 있으면 소문자s
+		
+		-rwSr-xr-x. 1 root root 0 2018-03-30 05:42 setuid2
+		>>기존에 허가권 필드에 실행권한(x)이 없으면 대문자S
+		
+		-r--------. 1 root root 0 2018-03-30 05:42 setuid3
+
+		@testuser1
+		#cd /Practice/setuid
+		#cat setuid3			>>허가 거부
+		
+		@root
+		#chmod u+s /bin/cat		>> cat명령어에 setuid권한 부여
+		#ll /bin/cat			>> -rwsr-xr-x 1 root root
+		
+		@testuser1
+		#cat setuid3			>> /bin/cat의 소유주인 root의 권한으로
+								   실행하기 때문에 가능
+		
+		@root 
+		#chmod u-s /bin/cat		>> cat명령에 setuid권한 회수
+		#ll /bin/cat			>> -rwxr-xr-x 1 root root
+		
+		@testuser1
+		#cat setuid3			>> testuser1의 권한으로 실행하기 때문에 불가능
+								
+	
+	
+	
+	* 특수 권한 - SetGID
+	
+		- 파일을 소유한 그룹의 권한으로 실행
+		- 보통 디렉터리에 설정한다.
+		- 기호모드 g+s , 숫자모드 2000과 같은 방법으로 설정한다.
+		- 그룹간에 파일을 공유하는 디렉터리에 설정하면
+		  그룹에 속한 사용자들이 모두 동일한 권한으로 사용할 수 있는 이점이 있다.
+		
+		- SetGID가 설정된 디렉터리에서는 해당디렉터리의 그룹 소유권에 설정된 GID로 생성된다.
+		
+		! 실습
+		
+		#mkdir /Practice/setgid
+		#chown :testgroup setgid
+		#ll
+		drwxr-xr-x 1 root testgroup
+		
+		#cd /Practice/setgid
+		#touch file{1..3}
+		#ll
+		file1 root root
+		file2 root root
+		file3 root root
+		
+		
+		#cd /Practice
+		#chmod g+s setgid				>> 디렉터리에 gid 설정
+		#ll
+		drwxr-sr-x 1 root testgroup		>> 그룹란에 s 생성
+		
+		#cd /Practice/setgid
+		#touch Newfile{1..3}
+		
+		Newfile1 1 root testgroup
+		Newfile2 1 root testgroup
+		Newfile3 1 root testgroup
+	
+	
+	
+	
+	* 특수권한 - Sticky
+	
+		- 모든 사용자가 공유하는 디렉터리에 설정한다.
+		  (rwx rwx rwx)		>> 777
+		- Sticky설정이 되어있는 디렉터리에서는 해당파일을 소유한 계정만이
+		  파일을 삭제 할 수 있다.
+		- 기호모드 o+t , 숫자모드 1000으로 설정할 수 있다.
+		
+		
+		! 실습 
+		
+		#mkdir /Practice/sticky{1,2}
+		#touch /Practice/sticky{1,2}/file
+		
+		#chmod 777 sticky1					>> 모든 권한 부여
+		#chmod 1777 sticky2					>> 모든 권한 부여 + sticky
+		
+		#ll
+		drwxrwxrwx. 2 root      root      4096 2018-03-30 06:34 sticky1
+		drwxrwxrwt. 2 root      root      4096 2018-03-30 06:34 sticky2
+		└맨 끝에 t
+
+		#chmod 777 /Practice/sticky1/file
+		#chmod 777 /Practice/sticky2/file
+		
+		
+		@testuser1
+		#cd /Practice/sticky1		
+		#vi file						>> w권한 적용
+		---------
+		test
+		
+		:wq
+		-------
+		#cat file						>> r권한 적용
+		#./file							>> x권한 적용
+		#rm -rf file					>> 삭제 가능
+		
+		
+		
+		#cd /Practice/sticky2
+		#vi file						>> w권한 적용
+		---------
+		test
+		
+		:wq
+		-------
+		#cat file						>> r권한 적용
+		#./file							>> x권한 적용
+		#rm -rf file					>> 삭제 불가능
+	
+	
+	
+	
+	
+	
+	* 속성 ( attribution )
+	
+		- 허가권 / 소유권이랑 다른 개념으로 파일을 관리할 수 있다.
+		
+		
+		속성 변경 - chattr
+		
+		+ 속성 부여
+		- 속성 제거
+		
+		Ex)
+		
+		#chattr +i file
+		#chattr -i file
+		
+		
+		속성 확인 - lsattr
+		
+		
+			속성의 종류
+			
+			1) i속성 ( immutable )
+			
+			- 특정 파일에 i 속성이 설정되어있는 경우 
+			  파일의 내용을 수정하거나 , 이름을 변경하거나 , 삭제하는 등
+			  모든 사항을 변경할 수 없다 . ( 불변 )
+			 
+				 ex) 삭제가되면 안되는 파일 , 부팅관련 파일 , 중요한 파일
+			
+			2) a속성 ( append only )
+		
+			- i속성과 동일하게 기본값은 불변이다.
+			- 기존 파일의 내용은 유지하고 , 새로운 내용을 추가하는 형태는 가능하다.
+			  
+				ex) 로그파일
+		
+		
+			+@ 그 외 속성은 거의 사용하지 않는다.
+	
+	
+		! 실습
+	
+		#mkdir /practice/attr_test
+		#cd /practice/attr_test
+		
+		#echo "attrTest" > file		
+		#lsattr file				    >> 파일의 속성확인
+		#vi file
+		------------------------
+		파일의 내용을 수정
+		종료							>> 가능
+		------------------------
+		#echo "AddData" >> file			>> 추가도 가능
+		#rm -rf file					>> 삭제도 가능
+		
+		
+		#echo "attrTest" > file1		
+		#lsattr file1					>>파일 속성 확인
+		#chattr +i file1				>>불변속성 적용
+		#lsattr file1					>>변경된 속성 확인
+		#vi file1
+		---------------------
+		파일내용자유롭게 수정
+		
+		저장후종료						>>수정 불가능
+		--------------------
+		#echo "AddData" >> file1		>>추가 불가능
+		#rm -rf	file1					>>삭제 불가능
+		
+		
+		
+		#echo "attrTest" > file2		
+		#lsattr file2					>>파일 속성 확인
+		#chattr +a file2				>>불변속성 적용
+		#lsattr file2					>>변경된 속성 확인
+		#vi file2
+		---------------------
+		파일내용자유롭게 수정
+		
+		저장후종료						>>수정 불가능
+		--------------------
+		#echo "AddData" >> file2		>>추가는 가능
+		#rm -rf	file2					>>삭제 불가능
+		
+		
+		
+		#chattr -i file1					>>불변속성제거
+		#echo "New Data" > file1			>>수정가능
+		#rm -rf file1						>>삭제가능
+		
+		#chattr -a file2					>>추가속성제거
+		#echo "New Data" > file2			>>수정가능
+		#rm -rf file2						>>제거가능
+		
+		
+	
+
+		+@파일 유형
+		
+		- 허가권 필드의 맨앞에 한개의 문자로 파일의 종류를 명시한다.
+		- 파일의 종류는 크게 일반 파일과 특수 파일로 구분할 수 있다.
+		
+			1) 일반 파일 : 텍스트 , 실행 , 데이터 파일 등
+			2) 특수 파일 : 블록 , 캐릭터 , 링크 파일 등
+			
+		
+		#ll /etc
+		
+		- : 일반 파일을 의미
+		d : 디렉터리를 의미
+		l : 심볼릭링크파일을 의미
+		
+		#ll /dev
+		
+		b : 블록구조의 특수파일				Ex) #ll /dev/sda	
+		c : 입출력에 사용되는 특수 파일			Ex) #ll /dev/console
+			
+	
+	
+		
+
+	
+	* 링크
+	
+		1) 심볼릭 링크
+
+			- windows의 바로가기 아이콘과 비슷
+			- 주로 사용자가 많이 사용하는 링크
+			- 원본을 제거하면 사용을 할 수 없다. ( 원본자체를 가리키는 포인터 역할 )
+			- 새로운 inode를 생성
+			
+			[ 사용법 ]
+			
+			#ln -s 실행파일 링크파일
+				
+		
+		2) 하드링크
+		
+			- 동일한 inode 사용
+			- 원본을 제거해도 사용할 수 있다.
+			- 복사와의 차이점은 공간을 차지하지 않는다.
+			
+			[ 사용법 ]
+			
+			#ln 실행파일 링크파일
+		
+		
+		! 실습
+		
+		#mkdir /Practice/link
+		#cd /Practice/link
+		#vi tester
+		----------------
+		date
+		
+		:wq!
+		----------------
+		#chmod 777 tester
+		
+		#cp ./tester ./cp1			>>복사본 1생성
+		#cp ./tester ./cp2			>>복사본 2생성
+		#cp ./tester ./cp3			>>복사본 3생성
+		#ls -il						>>원본파일과 복사본이 모두 inode(맨 앞 숫자)가 다르다.
+		
+		#ln ./tester ./hardlink1	>>하드링크 1생성
+		#ln ./tester ./hardlink2	>>하드링크 2생성
+		#ln ./tester ./hardlink3	>>하드링크 3생성
+		#ls -il						>>원본파일과 하드링크가 모두 inode가 같다.
+		
+		#ln -s ./tester ./softlink1	>>심볼릭링크 1생성
+		#ln -s ./tester ./softlink2	>>심볼릭링크 2생성
+		#ln -s ./tester ./softlink3	>>심볼릭링크 3생성
+		#ls -il						>>원본파일과 inode가 다르다.
+
+		
+		#./tester					>> O
+		#./cp1						>> O
+		#./cp2						>> O
+		#./cp3						>> O
+		
+		#./hardlink1				>> O
+		#./hardlink2				>> O
+		#./hardlink3				>> O
+		
+		#./softlink1				>> O
+		#./softlink2				>> O
+		#./softlink3				>> O
+		
+		#rm -rf tester				>> 원본파일 제거
+		
+		#./cp1						>> O
+		#./cp2						>> O
+		#./cp3						>> O
+		
+		#./hardlink1				>> O
+		#./hardlink2				>> O
+		#./hardlink3				>> O
+		
+		#./softlink1				>> X
+		#./softlink2				>> X
+		#./softlink3				>> X
+		
+		
+
+		  
+		! 실습
+		
+		#umask			>>umask값 확인
+		0022
+		
+		#mkdir /Practice/umaskTest
+		#cd /Practice/umaskTest
+		#mkdir dir1			>>권한 rwx r-x r-x (755)
+		#touch file1		>>권한 rw- r-- r-- (644)
+		#ll 
+		
+		#umask 000
+		#mkdir dir2			>>권한 rwx rwx rwx (777)
+		#touch file2		>>권한 rw- rw- rw- (666)
+		#ll	
+		
+
+		#umask 027
+		#mkdir dir3			>>권한 rwx r-x --- (750)
+		#touch file3		>>권한 rw- r-- --- (640)
+		#ll	
+		
+		
+		#umask 				>>umask값 확인 027
+		#logout			
+		재접속
+		
+		#umask				>>uamsk값 초기화 022
+
+
+	

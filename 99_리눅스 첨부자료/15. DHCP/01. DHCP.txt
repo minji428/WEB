@@ -1,0 +1,221 @@
+### DHCP 서비스 구축 및 운영 ###
+
+
+
+
+
+	
+	* DHCP ( Dynamic Host Configuration Protocol )
+	
+		- 사용자가 인터넷을 하기 위한 IP주소 설정 , 중복 방지,
+		  Gateway , Subnetmask, DNS서버 등 모두 자동으로
+		  구성해주는 프로그램/기능
+		  
+		- IP주소 풀에서 클라이언트에게 IP주소를 임대 ( Lease )해주며,
+		  IPv4 , IPv6를 지원한다.
+		  
+		  @ IP주소 풀 ( Pool )  : IP주소를 임대할 수 있는 범위
+	  
+	
+		>> 실제 윈도우 네트워크 설정 - 이더넷 속성 - 인터넷 프로토콜 버전 4~ 더블클릭 - (자동으로 IP 주소 받기 = DHCP)
+	
+	
+	
+	>> 환경 설정 직후
+	
+	* DHCP 서버 구축
+	
+	
+		1) 패키지 다운로드
+		
+		#yum install -y dhcp
+		
+		
+		2) dhcp 주 설정 파일 생성
+		
+		#vi /etc/dhcp/dhcpd.conf
+		----------------------------
+		
+		subnet 100.100.100.0 netmask 255.255.255.0{					>> dhcp서버에 적용할 네트워크
+		
+			range 100.100.100.200 100.100.100.210;					>> IP주소 풀(범위)
+			option routers 100.100.100.2;							>> 게이트웨이 주소
+			option broadcast-address 100.100.100.255;				>> 브로드캐스트 주소
+			option subnet-mask	255.255.255.0;					>> 서브넷 마스크(위에 있어서 안써도 무방)
+			option domain-name-servers 168.126.63.1 , 168.126.63.2;	>>  DNS서버 주소
+			default-lease-time 10000;								>>  기본 임대시간 (10000초)
+			max-lease-time 20000;									>>  최대 임대시간 (초)
+		
+		
+		}
+		
+		:wq
+		-----------------------------
+		
+		
+		3) 서비스 시작
+		#service dhcpd start		>> 설정파일에 오타가 있을시 failed
+		
+		
+		
+		4) 클라이언트에서 테스트
+		@Practice
+		#service network restart
+		#ifconfig
+		
+		
+		
+		+@ /var/lib/dhcpd/dhcpd.leases		>> IP임대기록이 저장되어있는 파일
+	
+	
+	
+	
+	
+	
+	
+	* DHCP를 이용하여 특정 호스트에게 고정IP 할당하기
+	
+	
+		@클라이언트
+		#ifconfig
+		Hostname Server1				[가정]
+		Hwaddr   00:0C:29:6E:1B:67		[가정]
+		
+		@DHCP 서버
+		#vi /etc/dhcp/dhcpd.conf
+		-------------------------------
+		subnet 100.100.100.0 netmask 255.255.255.0{						>> dhcp서버에 적용할 네트워크
+		
+			range 100.100.100.200 100.100.100.210;						>> IP주소 풀(범위)
+			option routers 100.100.100.2;								>> 게이트웨이 주소
+			option broadcast-address 100.100.100.255;					>> 브로드캐스트 주소
+			option subnet-mask	255.255.255.0;							>> 서브넷 마스크
+			option domain-name-servers 168.126.63.1 , 168.126.63.2;		>>  DNS서버 주소
+			default-lease-time 10000;									>>  기본 임대시간 (초)
+			max-lease-time 20000;										>>  최대 임대시간 (초)
+		
+		}
+		
+		host Server1{													>>  host [호스트네임]
+			hardware ethernet 00:0C:29:6E:1B:67;						>>  hardware ethernet [MAC주소]
+			fixed-address 100.100.100.99;								>>  fixed-address [고정IP주소];
+		
+		}
+		
+		:wq
+		-------------------------------
+		
+		#service dhcpd restart
+		
+		@클라이언트
+		#ifconfig
+	
+	
+	
+	
+	! 실습
+	
+	1. 100.100.100.150 ~ 100.100.100.200번 대역으로 IP를 할당
+	   (옵션제거)
+
+	    클라이언트에서 ping 100.100.100이 되는지 확인(O)  (게이트웨이 경유x)
+		클라이언트에서 ping 8.8.8.8이 되는지 확인(X)	  (게이트웨이 경유o)
+	
+		DHCP서버에서 gateway주소를 받지 못했기 때문에 외부와는 통신이 불가하다.
+		
+		
+		@DHCPserver
+		
+		#yum -y install dhcp
+		#vi /etc/dhcp/dhcpd.conf
+		------------------------
+		subnet 100.100.100.0 netmask 255.255.255.0{	>> dhcp서버에 적용할 네트워크
+	
+		range 100.100.100.200 100.100.100.210;					>> IP주소 풀(범위)
+		default-lease-time 10000;								>>  기본 임대시간 (초)
+		max-lease-time 20000;									>>  최대 임대시간 (초)
+	
+		}
+		
+		:wq
+		------------------------
+		
+		#service dhcpd restart
+		
+		@Client
+		#service network restart
+		#ifconfig
+		#ping 100.100.100.100 (o)
+		#ping 8.8.8.8		  (x)
+		
+		(Snapshot)
+	
+	
+	
+	
+	
+	2. 100.100.100.50 ~ 100.100.100.100번 대역으로 IP를 할당
+	
+		Practice에서는 77번을 고정으로 할당받도록 설정
+	
+	@client
+	#ifconfig
+	Hostname Server1				[가정]
+	Hwaddr   00:0C:29:6E:1B:67		[가정]
+	
+	
+	@DHCP server
+		
+		#yum -y install dhcp
+		#vi /etc/dhcp/dhcpd.conf
+		------------------------
+		subnet 100.100.100.0 netmask 255.255.255.0{					>> dhcp서버에 적용할 네트워크
+
+		range 100.100.100.50 100.100.100.100;						>> IP주소 풀(범위)
+		option routers 100.100.100.2;								>> 게이트웨이 주소
+		option broadcast-address 100.100.100.255;					>> 브로드캐스트 주소
+		option subnet-mask	255.255.255.0;							>> 서브넷 마스크
+		option domain-name-servers 168.126.63.1 , 168.126.63.2;		>>  DNS서버 주소
+		default-lease-time 10000;									>>  기본 임대시간 (초)
+		max-lease-time 20000;										>>  최대 임대시간 (초)
+
+		}
+	
+		host Server1{												>>  host [호스트네임]
+			hardware ethernet 00:0C:29:6E:1B:67;					>>  hardware ethernet [MAC주소]
+			fixed-address 100.100.100.99;							>>  fixed-address [고정IP주소];
+	
+		}
+	
+		:wq
+		------------------------
+		
+		#service dhcpd restart
+		
+	@Client
+		#service network restart
+		#ifconfig								>> 100.100.100.77 확인
+	
+	
+	
+	
+	
+	* 서버가 종료후에도 자동으로 동작할 수 있도록 설정
+	
+		@Server
+		#reboot
+		
+		#service dhcpd status			>>  서비스 정지상태
+		
+		@Client							>>  DCHP서버 이용 X
+		
+		@Server
+		#chkconfig --list				>>  dhcpd 전부 해제된 상태
+										
+		#chkconfig dhcpd on				>>  dhcpd 활성화 ( 재부팅해도 서버가 운영 )
+		#reboot							>>  테스트를 위해서 reboot
+		
+		#chkconfig --list				>>  자동으로 서비스 실행중
+		
+		@Client							>>  DHCP 서버 이용 O
+		

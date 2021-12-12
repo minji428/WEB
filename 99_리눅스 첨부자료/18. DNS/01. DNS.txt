@@ -1,0 +1,442 @@
+### DNS ( Domain Name Service ) ###
+
+	
+	
+	* DNS
+	
+		- 사람이 사용하는 도메인 주소를
+		  컴퓨터가 사용하는 IP주소로 변환해주는 기능을 가진 프로그램 서비스
+		  
+		- IP주소를 암기 -> /etc/hosts사용 -> DNS서버사용으로 발전
+		
+		
+		
+		
+		! 실습 (현재 실행 불가) >> 예전에는 이러했다 알고만 있으면 됨
+		
+		firefox(웹브라우저)설치
+		#yum install -y firefox
+		
+		firefox를 이용하여 www.nate.com   접속   >> o
+		firefox를 이용하여 120.50.132.112 접속   >> o
+		
+	***24행은 중요***
+		#vi /etc/resolv.conf
+		#nameserver 168.126.63.1				>> dns서버 주석 -> DNS서비스 이용x
+		
+		firefox를 이용하여 www.nate.com   접속   >> x
+		firefox를 이용하여 120.50.132.112 접속   >> o
+		
+		
+		
+		#vi /etc/hosts						>>hosts파일에 도메인주소 등록
+		------------------
+		~~ 하단에 추가 ~~
+		
+		120.50.132.112 www.nate.com
+		
+		:wq
+		-----------------
+		
+		
+		firefox를 이용하여 www.nate.com   접속   >> o		>>hosts에 등록된 도메인만 접속가능
+		firefox를 이용하여 120.50.132.112 접속   >> o
+		firefox를 이용하여 www.daum.net   접속   >> x		>> 등록 안됨
+		firefox를 이용하여 www.google.com 접속   >> x
+		
+		
+		#vi /etc/hosts						
+		------------------
+		~~ 하단에 추가 ~~
+		
+		120.50.132.112 www.daum.net			>>도메인을 nate->daum으로 수정
+		
+		:wq
+		-----------------
+		
+		firefox를 이용하여 www.daum.net 접속   >> www.nate.com으로 접속
+		
+		
+		다음 실습을 위해서
+		#vi /etc/hosts 파일 원위치
+		#vi /etc/resolv.conf파일 원위치
+	
+	
+	
+	
+	* DNS 서버구축 
+		
+		( selinux = permissive or disabled)
+		( iptables stop 후에 실습 진행 )
+		
+		@Server-A
+		
+		#yum install bind bind-utils bind-libs bind-chroot
+		
+			bind		>> dns 서버 프로그램
+			bind-utils	>> dns 질의용 프로그램
+			bind-libs	>> dns 서버에 필요한 라이브러리
+			bind-chroot	>> chroot 환경을 적용시키기 위한 파일 제공
+		
+		
+		/etc/named.conf				>> dns 서버 주 설정파일
+		/etc/named.rfc1912.zones	>> zone정보를 설정하기 위한파일
+		/var/named					>> dns서버가 이용하는 데이터베이스파일이
+										위치하는 디렉터리
+		
+		
+			#vi /etc/named.conf
+			-----------------------------------------
+			(11번행) listen-on port 53 { any; };		>> dns 53번 포트를 사용함
+														   53번에 접속할 IP주소 설정 ( any = 모두 )
+			
+			(12번행) listen-on-v6 port 53 { none; };	>> IPv6 연결은 허용하지 않음
+			
+			(17번행) allow-query { any; };				>> 해당 네임서버로 질의할 수 있는 
+															클라이언트의 IP주소 ( any = 모두 )
+			
+			(18번행) recursion yes;
+			
+			(20번행) dns-sec enable no;		>>dns_sec 사용x (no로 하지 않아도 사용이 잘되면 yes로 진행)
+			(21번행) des-sec validation no;					:(yes로 사용하고 문제가 있을시 no로 변경)
+			
+			
+			
+			>>해당 네임서버가 관리하는 도메인이 아닌경우 ( 도메인이 없을경우 )
+			root 네임서버에게 해당 정보를 전달하여 대신 응답하도록 설정
+			
+			:wq
+			-----------------------------------------
+			
+			
+			#vi /etc/named.rfc1912.zones
+			---------------------------------
+			~~ 제일 하단에 추가 ~~
+			
+			
+			zone "byunguk.com" IN {				>> 해당 도메인		
+				type master;					>> 실제 정보를 제공하는 서버
+				file "byunguk.zone";				>> 도메인에 대한 정보를 가지고 있는
+												   데이터베이스 파일명 ( /var/named에 위치)
+				allow-update { none; };			>> 원격에서 업데이트가 가능할경우 
+													허용할 IP주소
+			};
+			
+
+			zone "100.100.100.in-addr.arpa" IN {	>>100.100.100.0대역의 역방향 질의 설정
+													>>Ex) 192.168.5.100   ->5.168.192
+														  192.168.5.200
+				type master;
+				file "byunguk.rev.zone";
+				allow-update { none; };
+			};
+			
+			
+			:wq
+			----------------------------------
+			
+			#named-checkconf /etc/named.rfc1912.zones  >>정상일 경우 출력결과가 없음
+			
+			
+			
+			#cd /var/named
+			#cp named.empty byunguk.zone
+			#cp named.empty byunguk.rev.zone
+			
+			#vi byunguk.zone
+			-----------------------------------
+			$TTL 3H
+	@       IN SOA  ns.byunguk.com. admin.byunguk.com. (
+											0       ; serial
+											1D      ; refresh
+											1H      ; retry
+											1W      ; expire
+											3H )    ; minimum
+			NS      ns.byunguk.com.
+			A       100.100.100.100
+
+	ns		IN		A		100.100.100.100
+	ftp     IN      A       100.100.100.100
+	www     IN      A       100.100.100.100
+
+			:wq
+			-----------------------------------------------
+		
+		
+			#vi byunguk.rev.zone
+			-----------------------------------------------
+			$TTL 3H
+	@       IN SOA  ns.byunguk.com. admin.byunguk.com. (
+											0       ; serial
+											1D      ; refresh
+											1H      ; retry
+											1W      ; expire
+											3H )    ; minimum
+			NS      ns.byunguk.com.
+
+	100		PTR		ns.byunguk.com.
+	100     PTR     ftp.byunguk.com.
+	100     PTR     www.byunguk.com.
+
+			:wq
+			------------------------------------------------
+			
+			#named-checkzone byunguk.zone byunguk.rev.zone	 >> zone파일 오류검사 (오류가 없으면 OK출력)
+			#chown root:named byunguk.*	>>named데몬이 해당 파일을 읽을 수 있어야 한다.
+			
+			#service named start
+		
+			
+			
+			#nslookup
+			>server 8.8.8.8			>>google dns서버 사용		
+			>www.google.com			>>o
+			>www.daum.net			>>o
+			>ftp.byunguk.com		>>x
+			
+			>server 100.100.100.100	>>구축한 dns서버로 변경
+			>server
+				100.100.100.100
+				
+			>www.google.com			>>o
+			>www.daum.net			>>o
+			>ftp.byunguk.com		>>o
+			>www.byunguk.com		>>o
+			
+			>100.100.100.100		>>역방향 질문도 o		
+				
+			
+			
+		@Client-Linux
+		
+		#yum install -y bind-utils
+		
+		#vi /etc/resolv.conf
+		---------------------------
+		nameserver 100.100.100.100		>> 사용중인 dns서버를 변경
+		
+		:wq
+		----------------------------
+			
+		
+		#ping www.google.com			>>domain->ip 핑테스트 o
+		#ping www.byunguk.com			>>o
+		#ping ftp.byunguk.com			>>o
+		
+		
+		(만약 root dns서버를 이용하는 도메인의 ping이 안될경우
+		@Server -A
+		#vi /etc/named.conf
+		-----------------------
+		
+		(20번행) dnssec-enable no;			>>yes->no로 수정
+		(21번행) dnssec-validation no;		>>yes->no로 수정
+		
+		:wq
+		------------------------
+		
+		#service named restart				>>서비스 재시작
+											  그 다음부터 root도메인 이용가능
+		
+	
+	
+	
+	
+	* DNS 서버 이중화
+	
+	
+		Server-B 가상머신 생성
+		
+		IP:100.100.100.200
+		NETMASK=255.255.255.0
+		GATEWAY=100.100.100.2
+		DNS1=168.126.63.1
+		
+		
+		** 방화벽 멈춤 **
+		
+		#service iptables stop
+		#setenforce 0
+		
+		
+		@Server-B
+		#yum install -y bind bind-utils bind-libs bind-chroot
+		#vi /etc/named.conf
+		------------------------------
+		(12번행) listen-on port 53 { any; };
+		(13번행) listen-on-v6 port 53 { none; };
+		(17번행) allow-query { any; };		
+		(20번행) dnssec-enable no;					 
+		(21번행) dessec-validation no;								
+		
+		
+		:wq
+		------------------------------
+		
+		#vi /etc/named.rfc1912.zones
+		-----------------------------
+		~~~ 하단에 추가 ~~~
+		
+		zone "byunguk.com" IN {
+		
+			type slave;
+			file "slaves/byunguk.zone";
+			masters { 100.100.100.100; };
+			allow-update { none; };
+		};
+		
+		zone "100.100.100.in-addr.arpa" IN {
+		
+			type slave;
+			file "slaves/byunguk.rev.zone";
+			masters { 100.100.100.100; };
+			allow-update { none; };
+		};
+		
+		:wq
+		-----------------------------
+		
+		@Server-A
+		#vi /etc/named.rfc1912.zones
+		-----------------------------
+		zone "byunguk.com" IN {					
+			type master;					
+			file "byunguk.zone";														   
+			allow-update { none; };			
+			allow-transfer { 100.100.100.200; };	>>해당 설정(Server-B) 추가
+		};
+		
+
+		zone "100.100.100.in-addr.arpa" IN {																						  
+			type master;
+			file "byunguk.rev.zone";
+			allow-update { none; };
+			allow-transfer { 100.100.100.200; };	>>해당 설정(Server-B) 추가
+		};
+		
+		
+		:wq
+		-----------------------------
+		
+		
+		#cd /var/named
+		#ls
+		#vi byunguk.zone
+		---------------------------------
+		$TTL 3H
+	@       IN SOA  ns.byunguk.com. admin.byunguk.com. (
+											0       ; serial
+											1D      ; refresh
+											1H      ; retry
+											1W      ; expire
+											3H )    ; minimum
+			NS      ns.byunguk.com.
+			NS      ns2.byunguk.com.		>> Server-B 추가
+
+	ns      IN      A       100.100.100.100
+	ns2     IN      A       100.100.100.200		>> Server-B 추가
+	www     IN      A       100.100.100.100
+	ftp     IN      A       100.100.100.100
+
+		
+		:wq
+		-----------------------------------
+		
+		
+		#vi byunguk.rev.zone
+		------------------------------------
+		$TTL 3H
+	@       IN SOA  ns.byunguk.com. admin.byunguk.com. (
+											0       ; serial
+											1D      ; refresh
+											1H      ; retry
+											1W      ; expire
+											3H )    ; minimum
+			NS      ns.byunguk.com.
+			NS      ns2.byunguk.com.
+
+	100     PTR     ns.byunguk.com.
+	200     PTR     ns2.byunguk.com.
+	100     PTR     ftp.byunguk.com.
+	100     PTR     www.byunguk.com.
+
+		:wq
+		------------------------------------
+		
+		
+		#service named restart
+		
+		#cat /var/log/messages | tail -2	>>zone파일 전송가능 로그 확인
+		zone byunguk.com/IN: sending notifies
+		zone 100.100.100.in-addr.arpa/IN: sending notifies
+		
+		
+		@Server-B 
+		#service named start		>>슬레이브 dns서버도 dns시작
+		
+		#cd /var/named/slaves		>>전송된 파일이 위치한 구간	
+		#ls							>> byunguk.zone , byunguk.rev.zone파일 확인
+		
+		
+		@Server-A
+		#cat /var/log/messages | tail -4	>>데이터베이스 파일의 전송시작과 완료에 대한 메세지
+		
+		transfer of 'byunguk.com/IN': AXFR started
+		transfer of 'byunguk.com/IN': AXFR ended
+		transfer of '100.100.100.in-addr.arpa/IN': AXFR started
+		transfer of '100.100.100.in-addr.arpa/IN': AXFR ended
+		
+		
+		
+		
+		! dns서버 이중화 테스트
+		
+		@Client-Linux
+		
+		#yum install -y bind-utils	>>dns질의용 프로그램
+		
+		#vi /etc/sysconfig/network-scripts/ifcfg-eth0
+		---------------------------------------------
+		~~~생략~~~
+		
+		(변경)
+		DNS1=100.100.100.100	>>master dns server
+		DNS2=100.100.100.200	>>slave dns server
+		
+		:wq
+		---------------------------------------------
+		
+		#service network restart			>>네트워크 재시작
+		#cat /etc/resolv.conf				>>변경된 dns확인
+		nameserver 100.100.100.100
+		nameserver 100.100.100.200
+		
+		
+		#nslookup
+		>ftp.byunguk.com			>>100.100.100.100:o (로컬)
+		>www.naver.com				>>100.100.100.100:o (외부)
+		>exit
+		
+		@Server-A
+		#service named stop			>> master dns서비스 중지
+		
+		@Client-Linux
+		
+		#nslookup	(slave dns가 master 대신 작동중) 
+		>ftp.byunguk.com			>>100.100.100.200:o (로컬)
+		>www.naver.com				>>100.100.100.200:o (외부)
+		>exit
+		
+		@Server-B
+		#service named stop			>> slave dns서비스도 중지
+		
+		@Client-Linux
+		
+		#nslookup
+		>ftp.byunguk.com			>>x (로컬)
+		>www.naver.com				>>x (외부)
+		>exit
+		
+	+ 내가 원하는데로 master slave서비스를 중지하여서
+	  클라이언트에서 어떤 결과가 나오는지 확인
+	

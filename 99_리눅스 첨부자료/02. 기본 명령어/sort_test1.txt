@@ -1,0 +1,21 @@
+1	environment	
+10	company	
+6	government	
+9	face	
+8	race	
+2	plant	
+11	fire	
+3	matter	
+17	state	
+12	cause	
+4	reason	
+18	concern	
+13	bear	
+5	raise	
+19	subject	
+14	planet	
+7	article	
+20	education	
+16	purpose	
+15	arm
+	

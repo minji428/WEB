@@ -1,0 +1,490 @@
+﻿### VMware Network 설정 ###
+
+
+
+	vmware 환경변수 설정직후
+
+	* 네트워크 관련 파일
+	
+ 
+		1) /etc/sysconfig/network		>>시스템 네트워크 사용여부와 호스트네임을 설정
+		
+		# vi /etc/sysconfig/network
+		 -------------------------------------------------------------------------------------------
+		 NETWORKING=yes			>>네트워크 사용여부 결정
+		 HOSTNAME=Server1		>>네트워크에 연결되어있는 장치에게 부여하는 이름										  
+		 -------------------------------------------------------------------------------------------
+		 
+		 ! 실습
+		 #vi /etc/sysconfig/network
+		 ----------------------------------------
+		 NETWORKING=no			
+		 HOSTNAME=NewServer1		
+		 
+		 :wq!	 
+		 ----------------------------------------
+		 #reboot
+		 
+		 >>네트워크 사용불가 및 호스트네임이 NewServer1로 변경되어 있다.
+		 
+		 
+		2) /etc/sysconfig/network-scripts/ifcfg-eth0
+		   
+			DEVICE=eth0				>> 장치명(LIC=랜카드)
+			TYPE=Ethernet			>> 통신 타입(물리적 랜선으로 연결)
+			ONBOOT=yes				>> 재부팅시 활성화 여부
+			NM_CONTROLLED=no		>>NetworkManger데몬이 해당 장치를 제어할 수 없도록 설정(기본값=no)
+		
+			+@ Network 데몬
+				 네트워크에 관한 전반적인 환경을 구성해주는 데몬.
+				 시작시 설정파일(ifcfg-eth0)을 읽어들여 시스템에 적용한다.
+				 
+				 network데몬과 같이 설정을 할 경우 충돌을 일으키는 문제가 있다.
+				 
+			BOOTPROTO=static			>>IP 할당방식
+				
+				static : 고정(정적)IP
+				dhcp : 유동(동적)IP > 자동할당
+				none : 할당하지 않음
+		
+		
+		3) /etc/resolv.conf		>> DNS (실제로 숫자로 이루어진 주소들을 문자로 변환해주는 역할)
+		
+		- 로컬 네임서버의 IP주소가 저장되어있는 파일
+			
+			nameserver 8.8.8.8(구글)
+			nameserver 8.8.4.4
+			
+			예)네이버 접속 -> IP 123.123.123으로 접속
+	
+	
+	
+	* 네트워크 관련 명령어
+	
+	
+		1) ping
+		
+		- ip주소를 이용하여 패킷(icmp프로토콜)이 목적지까지 잘 도달하고
+		돌아오는지 확인하는 명령어
+		
+		[ 사용법 ]
+		
+		#ping [ip주소/도메인이름]
+		
+		Ex)
+		#ping 8.8.8.8
+		#ping www.naver.com
+		
+		[ 자주 사용되어지는 옵션 ]
+		
+		-c :  전송할 패킷 수 지정
+		
+		Ex)
+		ping -c 5 8.8.8.8		5번 전송
+		ping -c 10 8.8.8.8     10번 전송
+		
+		
+		
+		2) ifconfig
+		
+		- 네트워크 설정을 확인할 때 사용하는 명령어
+		
+		[ 사용법 ]
+		
+		#ifconfig		>> lo > loopback
+		
+		[ 자주사용되어지는 옵션]
+		
+		-a : 사용되어지지 않는 모든 장치까지 확인
+		
+		#ifconfig -a
+	
+			
+	
+	* Network설정
+
+	1. Bridge 네트워크
+		
+		->Edit 
+		->Virtual Network Editor
+		->VMnet0 - infomation에 bridged + automatic
+		
+		! 실습
+		
+		@Server-A
+		
+		Setting -> Network Adaptor -> Bridge로 변경 (안되면 체크박스 체크)
+		
+		#vi /etc/sysconfig/network-scripts/ifcfg-eth0 (단축키 net)
+		---------------------------------------
+		~~~ 생 략 ~~~
+		
+		IPADDR= 리얼PC와 같은 대역의 IP		>> 같으면 안됨
+		NETMASK= 리얼PC와 같은 서브넷마스크
+		GATEWAY= 리얼PC와 같은 게이트웨이		>> cmd - ipconfig에서 확인 가능
+		DNS1=168.126.63.1
+		
+		:wq
+		-------------------------------------
+		
+		
+		 +@ cmd -> arp -a 를 치면 현재 사용중인 내부 네트워크 IP를 조회할 수 있다
+		 
+		 
+		 - gateway 대역 변경
+			>> 호스트와는 통신 가능 / 외부와는 통신 불가
+			
+		 - IP 대역 비꿔서 실습
+		 
+		Ex) net에서 여기로
+		
+		@Real PC
+		IP      : 192.168.10.254
+		NETMASK : 255.255.255.0
+		GATEWAY : 192.168.10.1
+		
+		@Virtual PC1 ( Server-A ) - bridge
+		IP		: 192.168.10.(2 ~ 253)	>> 내 IP+50
+		NETMASK : 255.255.255.0
+		GATEWAY : 192.168.10.1
+		
+		@Virtual PC2 ( Practice ) - bridge
+		IP		: 192.168.10.(2 ~ 253)	>> 내 IP+100
+		NETMASK : 255.255.255.0
+		GATEWAY : 192.168.10.1
+		
+		@VirtualPC1 , VirtualPC2
+		#service network restart
+		# ping테스트
+		
+		# ping 다른 가상머신에게			(가상1 : 성공/가상2 : 성공)
+		# ping REAL OS에게			(가상1 : 실패/가상2 : 실패)	>> ???
+		# ping GATEWAY 에게			(가상1 : 성공/가상2 : 성공)
+		# ping 8.8.8.8 (외부망대표)		(가상1 : 성공/가상2 : 성공)
+		
+		
+	2. NAT 네트워크
+		
+		->Edit 
+		->Virtual Network Editor
+		->VMnet8 NAT 클릭
+		->SubnetIP:내가 원하는 대역 지정
+		
+		  Ex)
+		  100.100.100.0
+		  
+		  
+		->Subnet mask:내가 원하는 마스크
+		  Ex)
+		  255.255.255.0
+		  
+		
+		>> 100.100.100.0 ~ 100.100.100.255까지 IP 대역할당
+		   (실제 사용가능 IP는 처음과 마지막을 제외 => 100.100.100.1 ~ 100.100.100.254)
+		   : 1은 게이트웨이, 255는 브로드캐스트(방송국)에서 사용 + 2도 거의 쓰지않음
+		   
+		
+		-> NAT Setting 클릭
+		-> GATEWAY: 내가설정한 대역대의 2번 설정
+			Ex)
+			100.100.100.0 255.255.255.0  => 100.100.100.2
+			70.70.70.0 255.255.255.0	 => 70.70.70.2
+		
+		
+		@Server-A , Practice
+		
+		#vi /etc/sysconfig/network-scripts/ifcfg-eth0
+		--------------------------------------------
+		~~~ 생략 ~~~
+		
+		IPADDR=Network Editor에서 설정한 대역
+		NETMASK=Network Editor에서 설정한 서브넷
+		GATEWAY=Network Editor에서 설정한 게이트웨이
+		DNS1=168.126.63.1
+		
+		:wq
+		----------------------------------------------
+		
+		Ex)
+		
+		@ServerA ,Practice
+		--------------------------------------
+		
+		IPADDR=100.100.100.1~254 (2번제외)
+		NETMASK=255.255.255.0
+		GATEWAY=100.100.100.2
+		DNS1=168.126.63.1
+		
+		:wq
+		---------------------------------
+		#service network restart
+		
+		
+		! 실습
+		
+		- NAT Network대역은 200.200.200.0 ~ 200.200.200.255
+		- Server-A의 IP는 200.200.200.100
+		- Practice의 IP는 200.200.200.200
+		
+		@Server-A
+		# ping Practice에게 (100.100.100.200)
+		# ping REAL PC에게  (192.168.10.16)
+		# ping 8.8.8.8 (외부망대표)
+		
+		@Practice
+		# ping Server-A에게 (100.100.100.100)
+		# ping REAL PC에게  (192.168.10.16)
+		# ping 8.8.8.8 (외부망대표)	
+		
+		- 성공해야 정상
+		
+		
+		
+		1) Vitual Network Editor 편집
+		
+		->Edit 
+		->Virtual Network Editor
+		->VMnet8 NAT 클릭
+		->SubnetIP    : 200.200.200.0
+		  Subnetmask  : 255.255.255.0
+		->NAT Settings 클릭
+		  Gateway	  : 200.200.200.2
+
+		2) ServerA , Practice 우클릭 후에
+		   네트워크 타입을 NAT로 변경
+		  
+		3) 네트워크 설정파일 편집
+		
+		@ ServerA
+		#vi /etc/sysconfig/network-scripts/ifcfg-eth0
+		--------------------------------------------
+		~~생략~~
+		IPADDR=200.200.200.100
+		NETMASK=255.255.255.0
+		GATEWAY=200.200.200.2
+		DNS1=168.126.63.1
+		
+		:wq!
+		--------------------------------------------
+		
+		#service network restart
+		#ifconfig						>>변경된 ip확인
+		
+		
+		@ Practice
+		#vi /etc/sysconfig/network-scripts/ifcfg-eth0
+		--------------------------------------------
+		~~생략~~
+		IPADDR=200.200.200.200
+		NETMASK=255.255.255.0
+		GATEWAY=200.200.200.2
+		DNS1=168.126.63.1
+		
+		:wq!
+		--------------------------------------------
+		
+		#service network restart
+		#ifconfig						>>변경된 ip확인
+		
+		4) 테스트
+		
+		@ServerA
+		#ping 200.200.200.200
+		#ping 192.168.10.?   		>>항상 realpc의 ip를 확인
+		#ping 8.8.8.8
+		
+		@Practice
+		#ping 200.200.200.100
+		#ping 192.168.10.?   		>>항상 realpc의 ip를 확인
+		#ping 8.8.8.8
+		
+	
+	>> 점프! (별 내용 없음)
+	
+	
+	3. Host Only 네트워크
+	
+		! 실습 
+		VMware 좌측상단 Edit클릭 
+		-> Virtual Network Editor
+		-> VMnet1 NAT 클릭
+		-> SubNetIP : hostOS와 같은 IP 대역
+		-> subNetmask : hostOS와 같은 서브넷
+		
+		Ex)
+		   SubnetIP : 192.168.10.0
+		   Subnetmask : 255.255.255.0
+		
+		
+		
+		+@ 실습
+		
+		* Bridge 네트워크 구성
+		
+		- Server-A는 RealPC의 IP+70
+		- Practice는 RealPC의 IP+140
+		
+		#ping 다른가상머신
+		#ping Real PC
+		#ping 8.8.8.8
+			
+		
+		[real PC 192.168.10.2라고 가정]
+		
+		1) Server-A , Practice 우클릭 후에 Bridge로 변경
+		
+		2) 네트워크 설정파일 편집
+		@Server-A
+		#vi /etc/sysconfig/network-scripts/ifcfg-eth0
+		--------------------------------------------
+		~~생략~~
+		
+		IPADDR=192.168.10.72
+		NETMASK=255.255.255.0
+		GATEWAY=192.168.10.1
+		
+		:wq!
+		-----------------------------------------
+		#service network restart
+		#ifconfig						>> 변경된 IP확인
+		
+		
+		@Practice
+		#vi /etc/sysconfig/network-scripts/ifcfg-eth0
+		--------------------------------------------
+		~~생략~~
+		
+		IPADDR=192.168.10.142
+		NETMASK=255.255.255.0
+		GATEWAY=192.168.10.1
+		
+		:wq!
+		-----------------------------------------
+		#service network restart
+		#ifconfig						>> 변경된 IP확인
+		
+		
+		3) 테스트
+		@Server-A
+		#ping 192.168.10.142		>> 다른 가상머신
+		#ping 192.168.10.2		>> RealPC
+		#ping 8.8.8.8			>> Google DNS Server
+		
+		@Practice
+		#ping 192.168.10.72		>> 다른 가상머신
+		#ping 192.168.10.2		>> RealPC
+		#ping 8.8.8.8			>> Google DNS Server	
+	
+	
+	
+	* NAT 네트워크 구성
+	
+		NAT네트워크 대역 (70.70.70.0 ~ 70.70.70.255)
+		
+		- Server-A의 IP는 70.70.70.70	   255.255.255.0
+		- Practice의 IP는 70.70.70.100  255.255.255.0
+		
+		#ping 다른가상머신
+		#ping Real PC
+		#ping 8.8.8.8
+		
+		
+		[실제 PC의 ip가 192.168.10.2번이라고 가정]
+		
+		1) Vitual Network Editor 편집
+		Edit -> Virtual Network Editor
+		->VMnet8 NAT 클릭
+		->SubnetIP    : 70.70.70.0
+		  Subnetmask  : 255.255.255.0
+		->NAT Settings 클릭
+		  Gateway	  : 70.70.70.2
+
+		2) ServerA , Practice 우클릭 후에
+		   네트워크 타입을 NAT로 변경
+		  
+		3) 네트워크 설정파일 편집
+		
+		@ ServerA
+		#vi /etc/sysconfig/network-scripts/ifcfg-eth0
+		--------------------------------------------
+		~~생략~~
+		IPADDR=70.70.70.70
+		NETMASK=255.255.255.0
+		GATEWAY=70.70.70.2
+		DNS1=168.126.63.1
+		
+		:wq!
+		--------------------------------------------
+		
+		#service network restart
+		#ifconfig						>>변경된 ip확인
+		
+		
+		@ Practice
+		#vi /etc/sysconfig/network-scripts/ifcfg-eth0
+		--------------------------------------------
+		~~생략~~
+		IPADDR=70.70.70.100
+		NETMASK=255.255.255.0
+		GATEWAY=70.70.70.2
+		DNS1=168.126.63.1
+		
+		:wq!
+		--------------------------------------------
+		
+		#service network restart
+		#ifconfig						>>변경된 ip확인
+		
+		4) 테스트
+		
+		@ServerA
+		#ping 70.70.70.100
+		#ping 192.168.10.2   		
+		#ping 8.8.8.8
+		
+		@Practice
+		#ping 70.70.70.70
+		#ping 192.168.10.2   	
+		#ping 8.8.8.8
+	
+	
+	
+	>>여기로
+	
+	* Bridge네트워크 및 NAT네트워크 구축
+	
+		@Server-A 
+
+		Bridge로 설정 (realPC와 동일한 조건)
+		
+		IPADDR=192.168.10.RealPC+50
+		NETMASK=255.255.255.0
+		GATEWAY=192.168.10.1
+		
+		@Practice
+		
+		NAT로 설정  (realPC를 라우터로 쓰기 때문에 다른 IP와 GATEWAY를 사용)
+		
+		IPADDR=70.70.70.100	
+		NETMASK=255.255.255.0
+		GATEWAY=70.70.70.2		>> edit - virtureEditor에서 gateway 주소 70.70.70.0으로 변경
+		
+		
+		테스트
+		@Server-A
+		#ping 70.70.70.100				>>다른가상머신(Practice)
+		#ping 192.168.10.x				>>자신의 RealPC			>> 안돼ㅠ
+		#ping 8.8.8.8					>>Google DNS Server
+		
+		@Practice
+		#ping 192.168.10.RealPc+50		>>다른가상머신(Server-A)
+		#ping 192.168.10.x				>>자신의 RealPC
+		#ping 8.8.8.8					>>Google DNS Server	
+		
+		
+		
+		
+		
+		
+		
+		

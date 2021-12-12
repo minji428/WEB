@@ -1,0 +1,423 @@
+### 설정파일 ###
+
+
+	
+	VMware >> 환경변수 설정 직후로 변경 >> XShell로 작업
+
+
+
+	* /etc/passwd
+	
+		[사용자계정명]:[패스워드]:[UID]:[GID]:[Comment]:[홈디렉터리]:[쉘]
+
+		1) 사용자 계정명 
+			
+			- 사용자 계정을 나타내며 , 사용자의 이름은 중복되지 않아야 한다.
+		
+		2) 패스워드
+		
+			- 'X'로 표시되면 패스워드가 암호화되어 /etc/shadow 파일에 저장되어있음을 의미한다.
+			(#pwunconv    >> shadow 기능 비활성화)
+			
+			'*'로 표시되면 로그인이 불가능하다. 
+			'!!'로 표시되면 잠겨있는 계정이다.
+			
+		3) UID ( User Identification )
+		
+			- 사용자를 구별하는 고유 ID이며 , root는 0번 ,1 ~ 99번은 시스템 관리계정을 위해 예약 ,
+			일반 사용자는 500번 부터 시작할수 있다. ( 배포판에 따라 다르다. )
+		
+		4) GID ( Group Identification )
+		
+			- 사용자가 소속되어있는 그룹을 나타내며 , root는 0번 ,
+			1 ~ 99번은 시스템 관리계정을 위해 예약 ,
+			일반 사용자는 500번 부터 시작할수 있다. ( 배포판에 따라 다르다. )
+
+			- 한 사용자는 여러 그룹에 속할 수 있다.
+			- 그룹 번호와 이름은 /etc/group파일에 저장된다.
+		
+		5) Comment
+		
+			- 사용자 계정에 대한 주석문
+			- 시스템설정에 영향을 주지 않는다.
+		
+		6) 홈 디렉터리
+		
+			- 사용자가 로그인할 때 가장 먼저 위치하는 경로
+			- root(관리자)를 제외하고 대부분 /home 디렉터리 밑에 계정명으로 홈디렉터리를 생성한다.
+		
+		7) 쉘	>> [root@Server-A ~]#
+		
+			- 사용자가 로그인할시 사용할 쉘의 위치를 정의한다.
+			- 기본설정은 /bin/bash이다.					
+			- /sbin/nologin
+			  /bin/false
+			위와같이 지정되면 로그인을 할 수 없다.
+		
+	
+	
+	
+	
+	* /etc/shadow		>> ☆★중요☆★
+	
+		[사용자계정명]:[암호화된패스워드]:[최종암호변경일]:[암호변경최소일수]:[암호변경최대일수]:[경고일수]:[사용불가날짜]:[계정만료일]:[예약]
+		
+		1) 사용자계정명
+		
+		2) 암호화된 패스워드
+		
+			- 암호화된 패스워드가 저장된다.
+			
+			처음 두글자(암호화 알고리즘)
+			$1 : MD5
+			$2 : blowfish
+			$5 : SHA256
+			$6 : SHA512
+			
+			암호화 시에 SALT값을 이용하여 암호화하기 때문에
+			같은 패스워드라도 매번 다른 결과를 출력한다.
+			
+		3) 최종암호 변경일
+		
+			- 1970년 1월1일부터 계산하여 마지막으로 
+			패스워드를 변경한 날짜까지의 값 ( 단위 : 일 )
+			
+			Ex) 17000 -> 1970년1월1일부터 17000일 경과되었다는 뜻
+		
+		4) 암호변경 최소일수
+		
+			- 패스워드를 변경하고자 하는 최소 일수가 기록 ( 단위 : 일 )
+			- 최종암호 변경일을 기준으로 최소일수가 지난후에만 패스워드 변경이 가능하다.
+		
+		5) 암호변경 최대일수
+		
+			- 패스워드를 변경하지 않고 최대한 사용할 수 있는 기간 ( 단위 : 일 )
+			- 최종암호 변경일을 기준으로 현재 암호를 변경하지 않고 사용할 수 있는 일 수
+		
+		6) 경고일수
+		
+			- 사용자가 로그인 할 때마다 패스워드 변경일 수 까지 남은 일수를 메세지로 출력한다. ( 단위 : 일 )
+			
+			Ex) 암호변경최대일수 30
+				경고일수      10
+				
+				20일동안은 아무메세지가 없고 , 
+				21일부터 패스워드를 변경하라고 경고메세지 출력,
+				30일이 지난후는 강제로 패스워드를 변경해야 한다.
+		
+		7) 사용불가날짜
+			
+			- 암호변경최대일수 이후에 몇일후에 사용정지할지 설정한다.
+			- 설정된 날까지 로그인하지 않을 경우 사용자 계정은 locking된다.
+			(기본값은 NULL 무제한)
+			
+		8) 계정만료일
+		
+			- 사용자가 시스템을 마지막으로 사용할 수 있는 날짜를 기록
+			- 일수가 아니라 날짜를 기록해야 된다.
+		
+
+		9) 예약
+		
+			- 현재는 사용되지 않는다.
+	
+	
+	! 실 습
+	
+	( 환경변수 설정 이후로 스냅샷 이동 )
+	
+	#useradd testuser1
+	#passwd testuser1
+	111
+	111
+	
+	
+	#vi /etc/shadow
+	-------------------------
+	-맨하단-
+	testuser1:$6$~~생략~~:17665:2:30:7:::
+										>>최소 변경일 2일
+										>>패스워드 만료일자 30일
+										>>경고일수 7
+	
+	:wq!		
+	-------------------------
+	
+	(실습상황)
+	
+	@root
+	#date
+	20180515
+	
+	@testuser1
+	$passwd 
+	현재비밀번호 111
+	새비밀번호:					>> 변경 불가능 
+	
+	@root
+	#date -s 20180517		>> 2일 뒤로 변경
+	
+	@testuser1
+	$passwd
+	현재비밀번호:111
+	새 비밀번호:				>> 변경 가능
+	
+	실습을 위해 ctrl+c로 종료
+	
+	
+	
+	@root
+	#date -s 20180610		>> 만료일 4일전으로 날짜변경
+	
+	@testuser1
+	재로그인					>> 비밀번호 만료일 4일전 메세지 확인
+	
+	@root
+	#date -s 20180615		>> 만료일이후로 날짜변경
+	
+	@testuser1
+	재로그인					>> 비밀번호를 바꿔야만 로그인가능
+	
+	실습을 위해서 ctrl+c로 종료
+	
+	@root
+	#vi /etc/shadow
+	-------------------
+	-맨하단-
+	testuser1:$6$~~생략~~:17665:2:30:7:3::
+											>> 최소 변경일 2일
+											>> 패스워드 만료일자 30일
+											>> 경고일수 7일
+											>> 유효기간 3일
+	:wq!			
+	------------------
+	
+	
+	@root
+	#date -s 20180617						>> 유효기간 2일 경과
+	
+	@testuser1
+	로그인 시도							>> 비밀번호를 변경해야만 로그인 가능
+	
+	실습을 위해서 ctrl+c로 종료
+	
+	@root
+	#date -s 20180618					>> 유효기간 3일
+	
+	@testuser1
+	로그인시도								>> 로그인 불가
+	
+	
+	
+	#useradd testuser2
+	#passwd testuser2
+	111
+	111
+	
+	#vi /etc/shadow
+	-----------------
+	- 맨 하단 -
+	testuser2:$6$~생략~:17665:0:99999:7::17695:
+									
+										>>1970년 1월1일을 기준으로
+										17695일이 지난날 계정만료
+										( 상대값이 아닌 절대값 )
+	:wq!
+	-----------------
+	
+	(실습당시상황)
+	@root
+	#date
+	20180515
+	
+	#date -s 2018613
+	
+	@testuser2
+	로그인 가능
+	exit
+	
+	@root
+	#date -s 20180614		>>만료일
+	
+	@testuser2
+	로그인 불가
+	
+	
+		
+	* /etc/skel(디렉터리)
+	
+		- 사용자가 계정을 생성할때 , 사용자의 홈디렉터리에
+		  자동으로 복사가 될 파일을 위치할 디렉터리
+	  
+		
+		! 실습
+	  
+		@root
+		#cd /etc/skel
+		#touch README.txt		>>사용자계정에 복사될 파일
+		
+		#useradd testuser3
+		#passwd testuser3
+		111
+		111
+		
+		@testuser3					>>testuser3로그인
+		$ cd ~						>>홈디렉터리 이동
+		$ ls 						>>복사된 파일 확인
+		README.txt
+		
+		
+		@root
+		#cd /etc/skel
+		#touch file{1..10}		>>사용자계정에 복사될 파일
+		
+		#useradd testuser4
+		#passwd testuser4
+		111
+		111
+		
+		@testuser4					>>testuser4로그인
+		$ cd ~						>>홈디렉터리 이동
+		$ ls 						>>복사된 파일 확인
+		README.txt file1 file2 file..~~
+		
+		
+	  
+	* /etc/default/useradd
+	
+		GROUP=100					>> 기본소속그룹
+		HOME=/home					>> 홈디렉터리 경로
+		INACTIVE=-1					>> 패스워드 만기일 이후 유효기간 여부 설정
+									
+									   -1 : 비활성화
+									   0  : 패스워드 만기일이 되자마자 바로 잠금
+									   1~ : 해당일수만큼 유효기간을 부여
+											Ex) 7 -> 7일 유효기간
+												9 -> 9일 유효기간
+		
+		EXPIRE=						>> 계정 만료기간 
+									   (일수를 적지않고 
+									   1970년1월1일부터 지나온 일수를 기록)
+									   Ex) 20000
+									   1970년1월1일부터 20000일이 지난이후 계정 만료
+		
+		SHELL=/bin/bash				>> 기본 쉘	
+		
+		SKEL=/etc/skel				>> skel디렉터리 경로
+		
+		CREATE_MAIL_SPOOL=yes		>> 메일함 생성 유무
+
+
+	
+	! 실 습
+	
+	( 환경변수 설정이후 스냅샷 이동 )
+	
+	#useradd testuser1
+	#passwd
+	111
+	111
+	
+	#ls /home
+	testuser1
+	
+	#cat /etc/passwd
+	testuser1:x:500:500::/home/testuser1:/bin/bash
+
+	#cat /etc/shadow
+	testuser1:$6$Eur.NZPa$XIZkBBbn4/nrUFk.YpQT6XVidhNcvoEgZuukiM9G7LgF4oDvVoUKLrKjgjCfuqzl/xgK9ZRcelpQjoMzGizqq.:17665:0:99999:7:::
+	
+	
+	#vi /etc/default/useradd
+	------------------------------
+	GROUP=100
+	HOME=/				>>홈디렉터리 /로 수정
+	INACTIVE=5			>>유효기간 5일
+	EXPIRE=20000		>>만기일 20000
+	SHELL=/bin/bash
+	SKEL=/etc/skel
+	CREATE_MAIL_SPOOL=yes
+
+	:wq
+	------------------------------
+	
+	#useradd testuser2
+	#passwd testuser2
+	111
+	111
+	
+	#ls /home  >>testuser2(x)
+	#ls /	   >>testuser2(o)
+	
+	#cat /etc/passwd
+	testuser2:x:501:501::/testuser2:/bin/bash		>> 홈디렉터리가 /에 위치해있다.
+	
+	#cat /etc/shadow
+	testuser2:$6$J.~ 생략~:17665:0:99999:7:5:20000:  	>> inactive , expire가 
+													      /etc/default/useradd에서 설정한 대로 변경
+
+
+	
+	
+	
+	* /etc/login.defs
+
+		MAIL_DIR        /var/spool/mail		>> 메일 디렉터리 위치지정	
+		PASS_MAX_DAYS   99999				>> 패스워드 최대만료일
+		PASS_MIN_DAYS   0					>> 패스워드 변경 최소일자
+		PASS_MIN_LEN    5					>> 패스워드 최소 길이
+		PASS_WARN_AGE   7					>> 만료일전 경고일자
+		UID_MIN                   500		>> UID 시작 번호
+		UID_MAX                 60000		>> UID 최대 번호
+		GID_MIN                   500		>> GID 시작 번호
+		GID_MAX                 60000		>> GID 최대 번호
+		CREATE_HOME     yes					>> 홈디렉터리 생성여부
+		UMASK           077					>> UMASK값
+		USERGROUPS_ENAB yes					>> 멤버없는 그룹도 삭제
+		ENCRYPT_METHOD SHA512				>> 암호화 방법
+
+
+	! 실습
+	( /etc/default/useradd 이어서 진행 )
+	
+	#vi /etc/login.defs
+	------------------------
+	
+	MAIL_DIR        /var/spool/mail		>> 메일 디렉터리 위치지정	
+	PASS_MAX_DAYS   180					>> 패스워드 최대만료일	
+	PASS_MIN_DAYS   3					>> 패스워드 변경 최소일자
+	PASS_MIN_LEN    10					>> 패스워드 최소 길이
+	PASS_WARN_AGE   14					>> 만료일전 경고일자
+	UID_MIN                   700		>> UID 시작 번호
+	UID_MAX                 60000		>> UID 최대 번호
+	GID_MIN                   500		>> GID 시작 번호
+	GID_MAX                 60000		>> GID 최대 번호
+	CREATE_HOME     yes					>> 홈디렉터리 생성여부
+	UMASK           077					>> UMASK값
+	USERGROUPS_ENAB yes					>> 멤버없는 그룹도 삭제
+	ENCRYPT_METHOD SHA512				>> 암호화 방법
+	
+	:wq
+	-------------------------
+	#useradd testuser3
+	#passwd testuser3
+	111
+	111
+	
+	#ls /home						>> testuser3 (x)
+	#ls /							>> testuser3 (o)
+	
+	#cat /etc/passwd
+	testuser3:x:700:700::/testuser3:/bin/bash
+	>>uid , gid 700으로 변경 , 홈디렉터리가 /에 위치
+	 ( /etc/login.defs에 설정한대로 변경되어 있다.)
+	
+	
+	#cat /etc/shadow
+	
+	testuser3:$6$~생략~:17665:3:180:14:5:20000:
+	>>최소변경일수 -> 3일
+	  패스워드만료일 -> 180일
+	  경고일수 -> 14일
+	  ( /etc/login.defs에 설정한대로 변경되어 있다. )
+	

@@ -1,0 +1,52 @@
+﻿### 설정 파일 ###
+
+/etc/named.conf
+/etc/resolv.conf
+/etc/host.conf
+/etc/hosts
+/var/named/***.zone
+/var/named/***.rev
+
+/etc/named.conf
+
+named 가 실행 시에 NS 의 database 에 대한 기본적인 정보를 취급한다. 설정 파일의
+디렉토리, 파일 위치등을 지정하며 secondary option 으로 2 차 name server 를 지정
+을 할 수도 있다.
+
+/etc/resolv.conf
+
+system 에서 호출을 할 DNS 를 지정을 한다.
+
+/etc/host.conf
+
+hosts file 에 대한 설정과 dns 와 관련된 몇가지 설정을 이곳에서 한다.
+
+/etc/hosts
+
+mini dns 의 역할을 하는 file 이다. 위에 설명이 따로 되어 있다.
+
+/var/named
+
+NS 의 zone file 들이 위치한다. /etc/named.conf 에서 위치를 변경할 수 있다.
+
+/var/named/named.ca
+
+ROOT name server 의 IP 주소를 정의하여, 더 빨리 찾을 수 있도록 최적화 되어 있는
+file 이다. (따로 수정할 필요가 없이 그냥 있는 그대로 사용을 하면 된다.)
+
+/var/named/named.local
+
+Roopback IP address 에 대한 reverse mapping 을 정의한 파일이다. reverse mapping
+이란 ip address 로 domain name 을 찾는 것을 말한다. reverse mapping 설정을 하는
+것을 inverse domain 을 설정한다고 하기도 한다.
+
+/var/named/***.zone
+
+host 들에 대한 정보를 가지게 되는 file 이다. 실제로 bind 셋팅하는 것의 대부분이
+이 파일에서 이루어 진다. ( ***.zone 이라는 파일명은 /etc/named.conf 에서 정의한
+다.
+
+/var/named/***.rev
+
+대표 도메인에 대한 reverse mapping (inverse domain) 정보를 기록한다.
+이 파일 역시 /etc/named.conf 에서 이름을 정의한다.

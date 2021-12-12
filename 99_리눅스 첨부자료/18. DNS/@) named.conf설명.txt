@@ -1,0 +1,52 @@
+﻿### vi /etc/named.conf ###
+
+  listen-on-v6 port 53 { ::1; };
+
+  # 각 도메인의 zone 파일의 위치를 지정한다.
+  directory       "/var/named";
+
+  # 정보가 갱신될 때 저장되는 파일
+  dump-file       "/var/named/data/cache_dump.db";
+
+  # 통계파일이 생성되는 절대경로와 파일이름을 지정
+  statistics-file "/var/named/data/named_stats.txt";
+
+  # 메모리 관련 통계파일이 생성되는 절대경로와 파일이름을 지정
+  memstatistics-file "/var/named/data/named_mem_stats.txt";
+
+  # 네임서버 쿼리를 허용할 IP 혹은 IP 대역을 설정
+   // allow-query     { localhost; };
+  allow-query     { any; };
+
+  # 이 구문을 추가하지 않으면 warning 을 봄
+  empty-zones-enable no;
+
+  recursion yes;
+
+  dnssec-enable yes;
+  dnssec-validation yes;
+  dnssec-lookaside auto;
+
+  # Path to ISC DLV key
+  bindkeys-file "/etc/named.iscdlv.key";
+  managed-keys-directory "/var/named/dynamic";
+};
+
+
+  # 네임서버 실행에 있어서 디버깅시 참고 할 수 있는 로그파일생성 위치 지정
+  logging {
+      channel default_debug {
+              file "data/named.run";
+              severity dynamic;
+        };
+  };
+
+  # 루트도메인에 대한 설정을 named.ca라는 파일에서 참조하라는 설정
+  # type 값은 hint(루트도메인을 지정), master(1차 네임서버), slave(2차 네임서버)
+  zone "." IN {
+        type hint;
+        file "named.ca";
+  };
+
+  include "/etc/named.rfc1912.zones";
+  include "/etc/named.root.key";

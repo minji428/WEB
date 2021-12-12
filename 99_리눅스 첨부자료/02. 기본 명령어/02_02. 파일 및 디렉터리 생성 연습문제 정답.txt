@@ -1,0 +1,257 @@
+ [디렉터리 생성 및 삭제]
+
+
+1. 최상위 디렉터리(/)에 test 디렉터리 생성하시오. 
+
+	# mkdir /test	
+
+
+
+2. 아래 디렉터리를 명령어 한줄에 생성하시오. 
+	 
+	 /test/1
+	 /test/2
+	 /test/3
+	
+	1)
+	# mkdir /test/1 /test/2 /test/3 ( 절대 경로 )
+
+	2)
+	# mkdir /test/{1..3}	( 중괄호 확장 )
+
+	3)
+	# cd /test
+	# pwd					(/test)
+	# mkdir 1 2 3			( 상대 경로 )
+	
+	4)
+	# cd /test
+	# pwd					(/test)
+	# mkdir {1..3}			( 중괄호 확장 )
+
+3. 아래 디렉터리를 명령어 한줄에 생성하시오.
+	
+	/test/a/b/c
+
+	1)
+	# mkdir /test/a /test/a/b /test/a/b/c
+
+	2)
+	# mkdir -p /test/a/b/c
+
+
+
+
+4. 최상위 디렉터리에 linux 디렉터리 생성하시오.
+
+	# mkdir /linux
+
+
+
+
+5. 아래 디렉터리를 명령어 한줄에 생성하시오.
+	 
+	 /linux/a
+	 /linux/aa/bb
+	 /linux/aaa/bbb/ccc
+
+	1)
+	#mkdir /linux/a /linux/aa /linux/aa/bb /linux/aaa /linux/aaa/bbb /linux/aaa/bbb/ccc
+	
+	2)
+	#mkdir -p /linux/a /linux/aa/bb /linux/aaa/bbb/ccc
+
+
+
+
+6. 아래 디렉터리를 명령어 한줄에 삭제하시오.
+	
+	/test/1
+	/test/2
+	/test/3
+
+	1)
+	# rmdir /test/1 /test/2 /test/3
+
+	2) 
+	# rmdir /test/{1..3}
+	
+	3)
+	# cd /test
+	# rmdir 1 2 3
+
+	4)
+	# cd /test
+	# rmdir {1..3}
+
+
+
+7. 아래 디렉터리를 삭제하시오.
+
+	/test/a
+
+	# rm -rf /test/a 
+
+
+ [파일 생성 및 삭제]
+
+
+1. 아래 파일을 명령어 한번에 생성하시오.
+	
+	 /root/a
+	 /root/b
+	 /root/c
+	 /root/d
+	 /root/linuxlinux
+	 /root/linux777linux              
+	 /root/linux1
+	 /root/linux2
+
+	1)
+	# touch /root/a /root/b /root/c /root/d /root/linuxlinux
+	       /root/linux777linux /root/linux1 /root/linux2
+	
+	2)
+	# cd /root
+	# touch a b c d linuxlinux linux777linux linux1 kroea2
+
+
+
+2. 아래 파일을 명령어 한번에 삭제하시오.
+	
+	- /root/a
+	- /root/b
+
+	1)
+	# rm /root/a /root/b
+	
+	2)
+	# cd /root
+	# rm a b
+
+
+3. 아래 파일을 명령어 한번에 삭제하시오.
+	
+	- /root/c
+	- /root/d
+
+	1)
+	#rm /root/c /root/d
+	
+	2)
+	# cd /root
+	# rm c d
+
+	
+4. 아래 디렉터리를 명령어 한번에 생성하시오.
+	
+	- /it/a/b/c
+
+	1)
+	# mkdir /it /it/a /it/a/b /it/a/b/c
+
+	2)
+	# mkdir -p /it/a/b/c/
+
+
+5. 아래 파일을 명령어 한번에 생성하시오.
+	
+	- /it/a/test1
+	- /it/a/b/test2
+	- /it/a/b/c/test3
+
+	# touch /it/a/test1 /it/a/b/test2 /it/a/b/c/test3
+
+	
+	
+6. 명령어 한번에 아래 디렉터리와 파일을 삭제하시오.
+	 
+	- /it/a
+	- /it/a/b
+	- /it/a/b/c
+	- /it/a/test1
+	- /it/a/b/test2
+	- /it/a/b/c/test3
+	
+	# rm -rf /it
+	
+
+
+ [파일 및 디렉터리 이동]
+
+
+1. 아래 디렉터리 및 파일을 생성하시오.
+	
+	- /root/test1 폴더
+	- /root/test2 폴더
+	- /root/test3 폴더
+	- /root/test1 안에 1, 2, 3, 4, 5, 6, 7, 8, 9 파일 생성
+
+	# mkdir /root/test1 /root/test2 /root/test3
+	
+	1)
+	# touch /root/test1/{1..9}
+	
+	2)
+	# cd /root/test1
+	# touch 1 2 3 4 5 6 7 8 9
+
+	3)
+	# touch /root/test1/1 /root/test1/2 .. /root/test1/9
+
+
+2. /root/test1 폴더 안에 있는 9라는 파일을 /root/test2 폴더로 이동하시오.
+
+	# mv /root/test1/9 /root/test2
+
+
+3. /root/test1 폴더와 하위에 있는 모든 데이터를 /root/test2 폴더로 이동하시오.
+
+	# mv /root/test1 /root/test2
+
+	
+4. /root/test2 폴더의 이름을 /root/test333로 변경하시오.
+
+	# mv /root/test2 /root/test333
+
+
+
+ [파일 및 디렉터리 복사]
+
+
+1. 아래 디렉터리 및 파일을 생성하시오.
+
+	- /aaa 디렉터리
+	- /bbb 디렉터리
+	- /file1 파일
+	- /file2 파일
+
+	# mkdir /aaa /bbb
+	# touch /file1 /file2
+
+
+2. /file1을 /aaa 디렉터리로 복사하시오.
+
+	# cp /file1 /aaa
+
+
+3. /aaa 디렉터리와 함께 /aaa 디렉터리 안에 있는 모든 데이터를 /bbb 디렉터리로 복사하시오.
+
+
+	# cp -r /aaa /bbb
+	
+
+4. /file2을 /bbb/aaa로 이름을 file222로 변경 복사하시오.
+
+
+	# cp /file2 /bbb/aaa/file222
+
+
+
+
+
+	
+
+
+
+

@@ -1,0 +1,8 @@
+> Virtual Machine상단의 Edit 클릭
+> Virtual Network Editor 클릭
+> 화면 하단의 change Settings클릭
+> 위에 vmnet nat8클릭
+> 화면 하단의 subnet ip 100.100.100.0으로 변경
+> 화면 중단의 NAT Settings버튼 클릭
+> Gateway IP를 100.100.100.2로 변경
+> 저장후 종료

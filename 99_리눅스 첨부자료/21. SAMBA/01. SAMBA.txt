@@ -1,0 +1,234 @@
+### SAMBA ###
+
+
+	* SAMBA
+	
+		- windows와 linux간에 파일을 공유할때 사용하는 프로그램
+	
+	
+	! 서버 구축
+	
+	(#setenforce 0)
+	(#service iptables stop)
+	
+	#yum -y install samba samba-client samba-common samba-winbind
+	
+	#vi /etc/samba/smb.conf							//주 설정파일 편집
+	---------------------------------------------
+	57번행 [global]				//삼바 서버의 전반적인(기본값) 설정을 하는 구간
+	
+	74번행 workgroup = WORKGROUP //윈도우즈 운영체제가 설치된 시스템은
+								   기본적으로 워크그룹에 속하며,
+								   같은 워크 그룹에 속한 호스트 들만
+								   서로간에 netbios 통신을 할 수 있다.
+	
+	+@Netbios
+	
+	 윈도우즈 운영체제는 같은 네트워크 상에 있는 컴퓨터에 접속할 때
+	 IP주소 대신 컴퓨터의 이름(HostName)을 가지고 접속 할 수 있다.
+	 ( NetbiosName은 중복되지 않고 유일해야 한다.)
+	 
+	75번행 server string = Hello Samba Server %v	// samba서버에 대한 설명
+													// %v : 프로그램 버전으로 치환
+
+	77번행 netbios name = Server-A	 				//통신할 때 ip대신 사용되는 이름
+													//삼바 설정 파일에서 주석은 # ; // 으로 사용할 수 있다.
+	
+	79번행 interfaces = lo eth0 100.100.100.100/24	//서비스를 제공할 때 사용할 인터페이스
+													// lo ( loop back -> 127.0.0.1 )
+													// eth0 -> ifcfg-eth0
+													// 특정ip -> 100.100.100.100/24
+
+	80번행 hosts allow	= 100.100.100.				//삼바서버에 접속을 허용할 네트워크 주소.
+													  (호스트 IP는 생략이 가능)		
+													  Ex) 100.100.100.0 /24 -> 100.100.100.
+														  0.100.0.0 /16 -> 100.100.
+	
+	91번행 max log size = 50						// 로그파일의 크기 50kb
+													//50kb 초과하게 되면 새로운 로그파일 생성
+
+	101번행 security = user							//삼바 서버의 기본 동작 방식을 정의
+													//user - 인증된 사용자만 접속을 허용
+													//share - 인증과정없이 접속을 허용
+													//해당 설정은 기본 동작을 정의 할 뿐, 
+													실제 동작방식은 각 세션마다 다르게 설정할 수 있다.
+	
+	102번행 passdb backend = tdbsam 				//smbpasswd 명령어를 이용하여 계정을 등록
+	
+	103번행(추가) map to guest = Bad User 			// 계정이 없는 사용자는 윈도우에서 guest계정으로 매핑
+													리눅스는 nobody계정으로 동작
+	
+	248번행 ~ 261번행								// 삼바서버에서 기본적으로 공유하는 영역
+													// 거의 사용하지 않는다.
+
+
+	:wq
+	---------------------------------------------
+	
+	1) 익명사용자들이 접속이 가능한 서버
+	#vi /etc/samba/smb.conf
+	-----------------------------------
+	263번행
+	[share]						//공유 영역 생성
+								  share라는 이름으로 공유할때 사용
+	
+        path = /samba/share		//실제 공유가 되는 디렉터리
+        writable = yes			//쓰기가 가능 , read Only = No
+        guest ok = yes			//계정과 패스워드 입력이 없는 형태로 동작 ( share )
+        guest only = yes		//접근하는 모든 사용자를 익명으로 처리(window:guest , linux:nobody)
+        create mode = 0666		//파일 생성시 할당되는 권한
+        directory mode = 0777   //디렉터리 생성시 할당되는 권한
+	
+	:wq
+	----------------------------------
+	
+	#mkdir -p /samba/share		//공유 디렉터리 생성
+	#chmod 777 /samba/share		//허가권 설정
+	
+	#testparm					//설정된 내용 확인 및 오타를 체크하는 명령어
+									enter키 입력후 결과가 출력된다.
+				  
+	#service smb start
+	#service nmb start
+	
+	#cd /samba/share
+	#touch Server-A-file{1..10}		//테스트파일
+	
+	
+	@Client-Win
+	파일 탐색기 -> 검색 -> -> \\100.100.100.100\share
+							  \\Server-A\share 
+							  ( 앞으로 접속시 100.100.100.100 혹은 Server-A모두 가능 )
+							  
+	or
+	win+r -> 실행 -> \\100.100.100.100\share
+	
+	테스트 폴더 생성
+	마우스 우클릭->새로만들기->새폴더(client-win-dir)
+	
+
+	@Client-Linux
+	
+	(#service iptables stop)
+	(#setenforce 0)
+	
+	#yum install -y samba-client (클라이언트 패키지 설치)
+	#cd ~
+	#cp /etc/passwd ./user_list	 테스트파일 복사
+	
+	#smbclient //100.100.100.100/share
+	password: <enter>
+	
+	smb: \> dir					//확인
+	smb: \> put user_list		//파일 업로드
+	smb: \> get Server-A-file10 //테스트파일 다운로드
+	smb: \> exit				종료
+	
+	#ls							//다운로드 파일 확인
+	
+	@Server-A
+	#cd /samba/share
+	#ls							//업로드된 파일 확인 (+ 계정 및 권한 )
+	
+		
+
+		
+		
+	2) 인증된사용자들이 접속이 가능한 서버
+	
+	#vi /etc/samba/smb.conf
+	-----------------------------------
+	271번행
+	[security]					//공유 영역 생성
+								  security라는 이름으로 공유할때 사용
+	
+        path = /samba/sec_share		//실제 공유가 되는 디렉터리
+        writable = yes				//쓰기가 가능 , read Only = No
+        guest ok = no				//인증된 사용자만 로그인 가능
+        create mode = 0660			//파일 생성시 할당되는 권한
+        directory mode = 0770   	//디렉터리 생성시 할당되는 권한
+		valid users = @smbgroup		//smbgroup 그룹에 소속되어 있는 계정만
+									  접속 가능
+		
+	:wq
+	----------------------------------
+	#groupadd smbgroup
+	
+	#useradd samba-user1		//로컬계정 생성
+	#passwd samba-user1
+	111
+	111
+	
+	#useradd -G smbgroup samba-user2		//로컬계정 생성(그룹smbgroup)
+	#passwd samba-user2
+	111
+	111
+	
+	#pdbedit -L			// 삼바 서버에 등록된 계정의 정보를 확인
+	- 없음 -
+	
+	#smbpasswd -a samba-user1		// 삼바서버에 계정을 등록하며 패스워드 설정
+	222
+	222
+	
+	#smbpasswd -a samba-user2		// 삼바서버에 계정을 등록하며 패스워드 설정
+	222
+	222
+	
+	
+	#pdbedit -L			// 삼바 서버에 등록된 계정의 정보를 확인
+	samba-user1
+	samba-user2
+	
+	
+	
+	#mkdir -p /samba/sec_share			//공유 디렉터리 생성
+	#chmod 770 /samba/sec_share			//허가권 설정
+	#chown :smbgroup /samba/sec_share	//소유권 설정
+	
+	#testparm	//설정된 내용 확인 및 오타를 체크하는 명령어
+				  enter키 입력후 결과가 출력된다.
+				  
+	#service smb restart
+	#service nmb restart
+	
+	#cd /samba/sec_share
+	#touch Server-A-file{1..10}		//테스트파일
+	
+	
+	@Client-Win
+	파일 탐색기 -> 검색 -> -> \\100.100.100.100\security
+	or
+	win+r -> 실행 -> \\100.100.100.100\security
+	
+	테스트 폴더 생성
+	마우스 우클릭->새로만들기->새폴더(client-win-dir)
+	
+
+	@Client-Linux
+	
+	(#service iptables stop)
+	(#setenforce 0)
+	
+	#cd ~
+	
+	#smbclient //100.100.100.100/security -U samba-user2
+	password: 222
+	
+	smb: \> dir					//확인
+	smb: \> put user_list		//파일 업로드
+	smb: \> get Server-A-file9 //테스트파일 다운로드
+	smb: \> exit				종료
+	
+	#ls							//다운로드 파일 확인
+	
+	@Server-A
+	
+	#smbstatus					// 서버에 접속한 클라이언트의 정보를 확인
+	
+	#cd /samba/sec_share
+	#ls							//업로드된 파일 확인 (+ 계정 및 권한 )
+	
+	
+	
+	

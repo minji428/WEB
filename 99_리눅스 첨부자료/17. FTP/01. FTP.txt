@@ -1,0 +1,673 @@
+### FTP ( File Transfer Protocol ) ###
+
+
+
+	* FTP
+	
+		- 파일 전송 프로토콜
+		- 대량/대용량 파일을 전송하는데 특화되어있다.
+		- 기본 FTP는 평문으로 데이터를 전송하여 보안이 취약하다.
+		- 보안이 강화된 FTPS, SFTP가 있다.
+		- TCP방식으로 동작하며 20, 21번 포트를 사용한다.
+		
+			20번 포트 - 데이터 전송시 사용 ( Data Port )
+			21번 포트 - 접속 및 명령어 전달시 사용 ( Command Port )
+	
+	
+	* FTP 동작방식
+	
+		1) Active Mode (능동)
+		2) Passive Mode (수동)
+		
+		클라이언트가 접속할때 결정한다.
+		
+	
+	
+	
+	* VSFTP ( Very Secure FTP )
+	
+		GNU GPL라이센스 관리하에 배포되고 있는 FTP 서버용 프로그램
+		
+		보안기능이나 성능이 매우뛰어나 대부분의 배포판에 기본으로
+		채택되어 사용된다.
+
+		
+		! ftp서버 구축
+		
+		#yum install -y vsftpd		>> ftp 서버용 패키지 설치
+		
+		[#service iptables status]
+		[#service iptables stop]
+		
+		[#getenforce]				>> selinux 동작 확인
+		[#setenforce 0]				>> selinux가 enforcing 상태이면
+									   일시적으로 selinux를 permissive상태로 변환
+		[#vi /etc/selinux/config]   >> disabled로 상태 변경=>영구적으로 selinux사용x
+		
+		
+		#vi /etc/vsftpd/vsftpd.conf
+		---------------------------
+		설정 값 변경 ( 지금은 변경x )
+		
+		:wq
+		--------------------------
+		
+		#useradd ftpuser			>>ftpuser생성
+		#passwd	ftpuser
+		111
+		
+		#cd /var/ftp				>>ftp 계정의 홈디렉터리
+		#mkdir fileShare
+		#chmod 777 fileShare
+		#cd ./fileShare
+		#touch Server_file{1..10}   >>공유 파일 생성(테스트용)
+		
+		
+		#service vsftpd start		>>ftp 서버 가동
+		
+		
+		
+		
+		! 서비스 이용
+		
+		@Client-Linux
+		
+		#cd ~							>> 홈디렉터리로 이동
+		#touch Client_Linux_file{1..10} >> 테스트용 파일 생성
+		
+		#yum install -y ftp				>> ftp클라이언트 프로그램 설치
+		
+		#ftp 100.100.100.100    		>> ftp 서버 접속
+		
+		계정명 : anonymous
+		비밀번호 : enter (없음)
+		
+		
+		
+		ftp>cd fileShare
+		ftp>dir
+		파일 목록 : Server_file1 
+				 Server_file2
+				 ~ 
+				 Server_file10
+		
+		ftp>get Server_file1				>> 1개의 파일 다운로드
+		
+		ftp>mget Server_file2 Server_file3  >> 복수의 파일 다운로드
+		
+		ftp>put Cleint_Linux_file1			>> 업로드되지 않음 (설정파일에 x)
+		
+		ftp>exit
+		
+		#ls									>>다운로드 받은 파일 확인
+		
+		
+		
+		
+		#ftp 100.100.100.100			
+		Name     : ftpuser
+		Password : 111
+		
+		ftp>pwd						>> /home/ftpuser
+									>> 로컬 사용자의 ftp 서버 접속 처음 위치는
+									   로컬 사용자의 홈디렉터리
+		
+		ftp>cd /var/ftp/fileShare			>>공유폴더로 이동
+		ftp>dir								>>공유파일 확인
+		ftp>get Server_file4				>>다운로드 o
+		ftp>mget Server_file5 Server_file6	>>다운로드 o
+		
+		
+		ftp>put Client_Linux_file1						>>단일파일 업로드 o
+		ftp>mput Client_Linux_file2 Client_Linux_file3	>>복수의파일 업로드 o
+		
+		ftp>dir					>>업로드된 파일 확인
+		
+		
+		ftp>exit				>>종료
+		
+		#ls						>>다운로드받은 파일 확인
+		
+		
+		
+		@Client-Win
+		
+		->웹브라우저
+		->https://filezilla-project.org/   >>파일질라 공식홈페이지
+		->화면 중앙에 Download Filezilla Client 클릭
+		->다운로드
+		->설치 마법사( 설치 진행 )
+		
+		
+		[메모장]				  >>테스트용 파일 바탕화면에 생성
+		Client_Window_file1.txt 
+		test
+		
+		Client_Window_file2.txt
+		test
+		
+		->파일질라 프로그램 실행
+		
+		호스트  : 100.100.100.100
+		계정    : anonymous
+		비밀번호: x
+		포트    : x
+		연결
+		
+		왼쪽(로컬-클라이언트)			오른쪽(리모트-파일서버)
+		
+											fileShare에서
+											원하는 파일을
+											왼쪽(클라이언트)로
+											drag & drop  (o)
+		
+		
+		바탕화면에 있는
+		Client_Window_file1.txt를
+		파일서버의 fileShare로 
+		drag & drop (x)
+		
+		
+		
+		
+		호스트  : 100.100.100.100
+		계정    : ftpuser
+		비밀번호: 111
+		포트    : x
+		
+		왼쪽(로컬-클라이언트)			오른쪽(리모트-파일서버)
+		
+											fileShare에서
+											원하는 파일을
+											왼쪽(클라이언트)로
+											drag & drop  (o)
+		
+		
+		바탕화면에 있는
+		Client_Window_file1.txt를
+		Client_Window_file2.txt
+		파일서버의 fileShare로 
+		drag & drop (o)
+		
+	
+	
+	* FTP서버 설정
+	
+		#vi /etc/vsftpd/vsftpd.conf
+		------------------------------
+		12번행 anonymous_enable=YES		>>anoymous계정 로그인 허가
+		(12번행 YES=>NO로 변경)
+		anonymous_enable=NO				>>anoymous계정 로그인 불허
+		
+		:wq
+		-----------------------------
+		
+		#service vsftpd restart			>> 서버 재가동
+		
+		@Client-Linx , Client-Window
+		
+		#ftp 100.100.100.100
+		anonymous
+		enter							(로그인 x)
+		
+		#ftp 100.100.100.100
+		ftpuser
+		111								(로그인 o)
+		
+		
+		#vi /etc/vsftpd/vsftpd.conf
+		------------------------------
+		12번행 anonymous_enable=NO		
+		(12번행 NO=>YES로 변경)
+		anonymous_enable=YES				>>anoymous계정 로그인 허락
+		
+		
+		15번행 local_enable=YES
+		(15번행 YES=>NO로 변경
+		local_enable=NO						>>local계정 로그인 불허
+		
+		:wq
+		-----------------------------
+		
+		#service vsftpd restart			>> 서버 재가동
+		
+		@Client-Linx , Client-Window
+		
+		#ftp 100.100.100.100
+		anonymous
+		enter							(로그인 o)
+		
+		#ftp 100.100.100.100
+		ftpuser
+		111								(로그인 x)
+		
+		
+		
+		
+		#vi /etc/vsftpd/vsftpd.conf
+		------------------------------
+		12번행 anonymous_enable=YES		
+		15번행 local_enable=YES
+		18번행 write_enable=YES				>>파일 업로드 권한허용
+		
+		22번행 local_umask=022				>>로컬 유저가 파일 업로드시 적용될 UMASK값
+		(추가 anon_umask=022)				>>anonymous가 파일 업로드시 적용될 UMASK값
+		
+		28번행 anon_upload_enable=YES		>>anonymous계정에게 업로드 권한 허용
+		32번행 anon_mkdir_write_enable=YES 	>>anonymous계정에게 디렉터리 생성 허용
+		
+		:wq
+		-----------------------------
+		>>위의 파일에서 관리자가 설정한 방식으로 서버가 동작한다.
+		(위의 설정을 임의대로 변경해가며 실습해보세요.)
+	
+	
+	
+	
+	*/etc/vsftpd/ftpusers
+	
+		- ftp 접속을 차단할 계정 정보 파일
+		
+		#useradd ftp-user1
+		#useradd ftp-user2
+		#useradd ftp-user3
+		
+		#passwd ftp-user1
+		111
+		111
+		#passwd ftp-user2
+		111
+		111
+		#passwd ftp-user3
+		111
+		111
+		
+		@Client-Linux
+		#ftp 100.100.100.100
+		ftp-user1
+		111							(로그인 o)
+		
+		ftp-user2
+		111							(로그인 o)
+		
+		ftp-user3
+		111							(로그인 o)
+		
+		
+		#vi /etc/vsftpd/ftpusers
+		-------------------------
+		
+		하단에 접속을 차단할 계정 추가
+		
+		ftp-user2
+		ftp-user3
+
+		:wq	
+		------------------------
+		
+		@Client-Linux
+		#ftp 100.100.100.100
+		
+		ftp-user1			(로그인 o)
+		ftp-user2			(로그인 x)
+		ftp-user3			(로그인 x)
+		
+		>>계정을 바꾸어가면서 실습해보세요.
+	
+	
+	
+	* /etc/vsftpd/user_list
+	
+		- FTP 접속 계정 허용/차단 설정
+		- /etc/vsftpd/vsftpd.conf 설정에 따라 동작
+		
+		
+		#vi /etc/vsftpd/vsftpd.conf
+		----------------------------
+		119번행 userlist_enable=YES			>>user_list파일을 사용
+		
+		:wq!
+		----------------------------
+		
+		#vi /etc/vsftpd/user_list
+		---------------------------
+		~~하단에 추가~~
+		
+		ftp-user2							>>ftp-user2는 로그인 x
+		
+		:wq!
+		---------------------------
+		
+		#service vsftpd restart
+	
+	
+		@Client-Linux
+		#ftp 100.100.100.100
+		ftp-user1						 >>로그인 o
+		ftp-user2						 >>로그인 x
+		ftp-user3						 >>로그인 o
+		
+		
+		
+		
+		#vi /etc/vsftpd/vsftpd.conf
+		----------------------------
+		119번행 userlist_enable=YES			>>user_list파일을 사용
+		120번행(추가) userlist_deny=NO		>>user_list파일을 허용 목록으로 사용
+		
+											>>userlist_deny=YES는 user_list파일을 차단 목록으로 사용
+											>>설정이 되어있지 않을 경우 기본값은 YES
+			
+		:wq!
+		----------------------------
+		
+		#vi /etc/vsftpd/user_list
+		---------------------------
+		~~하단에 추가~~
+		
+		ftp-user2							>>ftp-user2만 로그인 허용
+		
+		:wq!
+		---------------------------
+		
+		#service vsftpd restart
+		
+		
+		@Client-Linux
+		#ftp 100.100.100.100
+		ftp-user1						 >>로그인 x
+		ftp-user2						 >>로그인 o
+		ftp-user3						 >>로그인 x
+	
+	
+	=================================================여기까지
+	* chroot 
+	
+		( 실습을 위해서 설정을 원래대로 변경 )
+		
+		
+		- 프로그램이 인식하는 최상위 디렉터리를 ( / )를 변경하여
+		  보안을 강화하는 방법
+		 
+		 
+		 
+		! 실습
+		
+		@Server-A
+		#vi /etc/vsftpd/vsftpd.conf
+		-------------------------------
+		97번 라인 #chroot_local_user=YES   
+		
+		:wq
+		-------------------------------
+		
+		@Client-Linux
+		#ftp 100.100.100.100
+		ftp-user2
+		111						
+		
+		ftp> pwd
+		/home/ftp-user2					>>ftp-user2의 홈디렉터리
+		
+		ftp>cd /						>>실제 ftp서버의 /로 이동
+		ftp>dir							>>조회 가능
+		
+		ftp>cd /etc						>>실제 ftp서버의 /etc로 이동
+		ftp>dir							>>조회 가능
+		
+		
+		
+		@Server-A
+		#vi /etc/vsftpd/vsftpd.conf
+		-------------------------------
+		97번 라인 chroot_local_user=YES   >>주석해지 (chroot 적용)
+		
+		:wq
+		-------------------------------
+		
+		#service vsftpd restart
+		
+		@Client-linux
+		#ftp 100.100.100.100
+		ftp-user2
+		111						
+		
+		ftp> pwd
+		/							>>Server-A의 루트가 아니라 가상의 /공간
+		
+		ftp> cd /					>> 이동 x
+		ftp> cd /etc				>> 이동 x
+		
+		
+		
+		
+		@Server-A
+		#vi /etc/vsftpd/vsftpd.conf
+		----------------------------
+		97번행(주석제거) chroot_local_user=YES						>> 로컬 계정에게 chroot를 적용
+		98번행(주석제거) chroot_list_enable=YES						>> chroot_list파일을 활성화 한다.
+		100번행(주석제거) chroot_list_file=/etc/vsftpd/chroot_list	>>chroot_list파일의 경로
+		
+		
+		:wq!
+		-----------------------------
+		
+		>>chroot_list에 등록된 계정을 제외하고는 chroot가 적용되도록 하겠다.
+		
+		
+		#vi /etc/vsftpd/chroot_list
+		---------------------------
+		ftp-user2					>>ftp-user2계정은 chroot적용x
+		
+		:wq
+		---------------------------
+		
+		#service vsftpd restart
+		
+		
+		#touch /home/ftp-user1/ftp_ftpuser2_file	>>홈디렉터리 확인테스트 파일 생성
+		#touch /home/ftp-user2/ftp_ftpuser2_file
+		#touch /home/ftp-user3/ftp_ftpuser3_file
+		
+		
+		
+		@Client-Linux	
+		#ftp 100.100.100.100
+		
+		ftp-user1
+		111
+		
+		ftp>pwd
+		/							>> /지만 /home/ftp-user1
+		
+		ftp>dir						>> 확인
+		ftp_ftpuser1_file
+		
+		ftp>cd /					>> 이동 x
+		ftp>exit
+		
+		
+		#ftp 100.100.100.100
+		ftp-user2
+		111
+		
+		ftp>pwd
+		/home/ftp-user2				
+		
+		ftp>dir						>> 확인
+		ftp_ftpuser2_file
+		
+		ftp>cd /					>> 이동 o
+		ftp>exit
+		
+
+		#ftp 100.100.100.100
+		
+		ftp-user3
+		111
+		
+		ftp>pwd
+		/							>> /지만 /home/ftp-user3
+		
+		ftp>dir						>> 확인
+		ftp_ftpuser3_file
+		
+		ftp>cd /					>> 이동 x
+	
+	
+	
+	
+	* ActiveMode & Passive Mode
+	
+		- 파일 참조
+		
+		! 실습
+		@Server-A
+		
+		#cd /home/ftp-user1
+		#chmod 777 /home/ftp-user1
+		#touch file{1..50}		   		>>테스트 파일생성
+		
+		
+		
+		1) Passive Mode
+		
+		#watch -d -n 0.1 "netstat -ntp"	>>네트워크 상태를 확인하는 명령어
+		
+		@Client-Linux
+		#ftp 100.100.100.100
+		ftp-user1
+		111
+		
+		@Server-A 상태 확인
+		100.100.100.100:21			100.100.100.110:?
+		
+		@Client-Linux
+		ftp>get file1
+		
+		@Server-A 상태 확인
+		100.100.100.100:?			100.100.100.110:?	>>Passive모드에서 서버의 데이터전송포트는 1024 ~
+		100.100.100.100:21			100.100.100.110:?  
+		
+		
+		@Client-Linux
+		ftp>get file2			 >>  Server-A,Client-Linux의 포트확인
+		ftp>get file3			 >>  Server-A (1024~) , Client-Linux (1024~)
+		  
+			...
+			...
+		
+		
+		2) Active Mode
+		
+		( 클라이언트 재접속 )
+		
+		@Client-Linux
+		#ftp 100.100.100.100
+		ftp-user1
+		111
+		
+		ftp> passive
+		passive mode off.				>>  Active모드로 변경
+		
+		
+		@Client-Linux
+		#ftp 100.100.100.100
+		ftp-user1
+		111
+		
+		@Server-A 상태 확인
+		100.100.100.100:21			100.100.100.110:?
+		
+		@Client-Linux
+		ftp>get file20
+		
+		@Server-A 상태 확인
+		100.100.100.100:20			100.100.100.110:?	>>서버의 데이터 전송포트는 20번
+		100.100.100.100:21			100.100.100.110:?	>>제어포트는 21번 
+		
+		
+		@Client-Linux
+		ftp>get file21			>> Server-A,Client-Linux의 포트확인
+		ftp>get file22			>> Server-A (20) , Client-Linux(1024~)
+		  
+			...
+			...
+		
+		
+		3) Passive모드에서 데이터 전송포트 지정
+		
+		@Server-A
+		#vi /etc/vsftpd/vsftpd.conf
+		-------------------------------
+		~~제일하단에 추가~~
+		
+		pasv_enable=YES					>> 수동모드 사용 (기본값)	
+		pasv_min_port=3000				>> 데이터전송포트 3000 ~ 
+		pasv_max_port=3010				>> 데이터 전송포트 3000 ~ 3010
+		
+		:wq!
+		--------------------------------
+		
+		#service vsfptd restart
+		#watch -d -n 0.1 "netstat -ntp"
+		
+		
+		@Client-Linux
+		#ftp 100.100.100.100
+		ftp-user1
+		111
+		
+		@Server-A 상태 확인
+		100.100.100.100:21			100.100.100.110:?
+		
+		@Client-Linux
+		ftp>get file40
+		
+		@Server-A 상태 확인
+		100.100.100.100:3000~3010	100.100.100.110:?	>>Passive모드에서 서버의 데이터전송포트는 3000 ~ 3010
+		100.100.100.100:21			100.100.100.110:?  
+		
+		
+		@Client-Linux
+		ftp>get file41			 >>  Server-A,Client-Linux의 포트확인
+		ftp>get file42			 >>  Server-A (3000~3010) , Client-Linux (1024~)
+		  
+			...
+			...
+	
+	
+	* 추가 기타 설정
+		@Server-A
+		
+		#vi /etc/vsftpd/vsfptd.conf
+		--------------------------------
+		86번행 (주석해지) fptd_banner=원하는 메세지		>> Banner 메세지 설정 
+														>> 보안상 의미가 있다.
+		60번행 (주석해지) idle_session_timeout=30		>> ftp 접속후 아무 입력이 없을시
+														>> 30초 후에 세션 종료 (단위:초)
+														
+		~~ 맨 하단에 추가 ~~
+		listen_port=2121								>>제어포트 2121번으로 변경
+		
+		:wq!
+		--------------------------------
+		
+		#service vsftpd restart
+		#watch -d -n 0.1 "netstat -ntp"
+		
+		
+		@Client-Linux
+		
+		#ftp 100.100.100.100 			>>로그인 x ( 제어포트를 변경했기때문에 )
+		
+		#ftp 100.100.100.100 2121		>>로그인 o , 2121번 포트로 접속 
+		
+		- 서버에서 설정한 베너 메세지 확인 -
+		
+		@Server-A
+		100.100.100.100:2121	100.100.100.110:?  >>포트 확인
+		
+		@Client-A
+		30초 동안 입력없이 대기. 30초후에 세션 종료되는지 확인
+	

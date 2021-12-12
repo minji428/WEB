@@ -1,0 +1,30 @@
+1) HOME : 사용자의 홈디렉토리
+2) PATH : 실행파일을 찾는 경로
+3) LANG : 프로그램 사용시 기본 지원되는 언어
+4) PWD : 사용자의 현재 작업하는 디렉토리
+5) TERM : 로긴 터미널 타입
+6) SHELL : 로그인해서 사용하는 쉘
+7) USER : 사용자의 이름
+8) DISPLAY : X 디스플레이 이름
+9) VISUAL : visual 편집기의 이름
+10) EDITOR : 기본 편집기의 이름
+11) COLUMNS : 현재 터미널이나 윈도우 터미널의 컬럼수
+12) PS1 : 명령프롬프트변수
+13) PS2 : 2차 명령프롬프트이다. 명령행에서 \를 사용하여 명령행을 연장했을 때 나타난다.
+14) BASH : 사용하는 bash 쉘의 경로
+15) BASH_VERSION : bash의 버전
+16) HISTFILE : history 파일의 경로
+17) HISTFILESIZE : history 파일의 크기
+18) HISTSIZE : history에 저장되는 갯수
+19) HISTCONTROL : 중복되어지는 명령에 대한 기록 유무를 지정하는 변수이다.
+20) HOSTNAME : 호스트의 이름
+21) LINES : 터미널의 라인 수
+22) LOGNAME :로그인이름
+23) LS_COLORS : ls 명령의 색상관련 옵션
+24) MAIL : 메일을 보관하는 경로
+25) MAILCHECK : 메일확인시간
+26) OSTYPE : 운영체제 타입
+27) SHLVL :쉘의 레벨
+28) TERM :터미널종류
+29) UID : 사용자의 UID
+30) USERNAME : 사용자이름

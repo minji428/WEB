@@ -1,0 +1,106 @@
+
+
+	! 리눅스 소개
+
+	- 리눅스 중점 교육보다는 혼자 공부하실 수 있도록 몇가지 주제만 같이 진행해보는 방식
+	- 유투브 교육 및 교육자료 , 책을 참고하시어 개별적으로 연습진행하시면 됩니다. 
+	  ( 개별적으로 연습하시고 언제든지 리눅스 질문주셔도 됩니다 :) )
+	
+	- 수업시간에 다룬 내용
+	
+	  1. 리눅스 설치 및 원격 접속 제어 환경 구축
+	
+	  2. 기본명령어
+		mkdir 
+		touch
+		cd
+		ls
+		rm -rf 
+	 
+	  3. VI Editor
+		명령모드   
+		편집모드  : i 입력후 진입
+		실행 모드 : set number 
+			   : 라인넘버
+			   : w!
+			   : q!
+		
+		
+	  4. 소프트웨어 설치
+	   
+	   #yum install -y 패키지명
+		
+	
+	  5. 웹서비스 구축
+	   # yum install -y httpd    		// 웹서버 설치
+	   # vi /etc/httpd/conf/httpd.conf	// 설정파일 편집
+	   # service httpd start			// 웹서버 실행
+
+	   
+	! 실습
+
+		1. 리눅스(CentOS)를 설치해 보세요.
+		
+			- pdf파일 참조
+			- 설치직후 snapshop 찍어두기
+			
+		2. 원격접속 환경을 구성해 보세요.
+		
+			- pdf 파일 참조
+			
+		3. 웹서비스를 구축해서 오픈해 보세요.
+		
+		( yum 설정을 지정하면 명령어를 실행 안해도 상관 없으나 
+		  일시적 실습이므로 아래 명령어를 실행후 진행하세요.
+		  한줄 씩 복붙하세요! )
+		-------------------------------------------------------------------
+		# yum install -y man
+		# echo "https://vault.centos.org/6.10/os/x86_64/" > /var/cache/yum/x86_64/6/base/mirrorlist.txt
+		# yum install -y man
+		# echo "http://vault.centos.org/6.10/extras/x86_64/" > /var/cache/yum/x86_64/6/extras/mirrorlist.txt
+		# yum install -y man
+		# echo "http://vault.centos.org/6.10/updates/x86_64/" > /var/cache/yum/x86_64/6/updates/mirrorlist.txt
+		# yum update -y			
+		-------------------------------------------------------------------
+		
+		
+		
+	
+		# setenforce 0 			 		// secure linux 해지
+	    
+		# service iptables stop	 		// 방화벽 해지
+	    
+		# yum install -y httpd    		// 웹서버 설치
+	    
+		# vi /etc/httpd/conf/httpd.conf	// 설정파일 편집
+		--------------------------------------------------------------
+		(44)  ServerTokens PROD 					>>OS -> PROD
+		(242) User  nobody							>>apache -> nobody
+		(243) Group nobody							>>apache -> nobody
+		(262) ServerAdmin admin@megaitlinux.com		>>root@localhost  -> admin@megaitlinux.com >> 관리자메일 수정
+		(276) ServerName www.megaitlinux.com:80		>>domain기록 (오류 사라짐)
+		(331) Options Indexes FollowSymLinks		>>디렉터리 리스팅
+		
+		:wq
+		--------------------------------------------------------------
+	    
+		# cd /var/www/html				// 웹 소스가 있는 디렉터리로 이동
+		# vi index.html
+		--------------------------------------------------------------
+		<html>
+		<body>
+		<h1>  Bridge Over Troubled Water - Simon And Garfunkel</h1>
+		</body> 
+		</html>
+		
+		:wq
+		--------------------------------------------------------------
+		
+		# service httpd start			// 웹서비스 시작
+	    
+		호스트 PC에서
+		100.100.100.100/index.html에 접근하여 웹서비스 이용이 되는지 확인
+		
+		
+		수고하셨습니다!
+	    

@@ -1,0 +1,355 @@
+### 계정 관리 ###
+
+
+
+
+
+	* 사용자 계정 추가 - useradd
+	
+		[ 사용법 ]
+		
+		#useradd [옵션] [계정명]
+		
+		[ 옵션 ]**
+		
+		-c : Comment				>> 주석 ( 사용자에 대한 설명 )
+		-u : UID					>> 사용자(user)번호
+		-g : GID					>> 주 그룹
+		-G : GROUP					>> 보조그룹
+		-s : SHELL					>> 쉘의 종류
+		
+		
+		#useradd user1
+		#passwd user1
+		1111
+		1111
+		#cat /etc/passwd 			>> 사용자 계정 기본 정보
+		
+		user1:x:500:500::/home/user1:/bin/bash
+		
+		
+		user1  :     x     : 500   : 500 :          : /home/user1 : /bin/bash
+	   [계정명]      [패스워드]   [UID]   [GID]  [Comment]  [Home Dir]     [Shell]
+		
+		
+		user1 		-> 계정명
+		x	  		-> 패스워드가 /etc/shadow 파일에 저장되어있다.
+		500	  		-> /etc/login.defs -> UID_MIN 500 (변경 가능)
+		500   		-> /etc/login.defs -> GID_MIN 500 (변경 가능)
+		공백  		-> 설명(메모)
+		/home/user1 -> 홈디렉터리 /etc/login.defs -> CREATE_HOME=yes
+							  /etc/default/useradd -> HOME=/home
+		
+		/bin/bash   -> 로그인 쉘 /etc/dafult/useradd -> SHELL=/bin/bash
+		
+		
+		#useradd user2
+		#passwd user2
+		2222
+		2222
+		#tail -2 /etc/passwd 
+		
+		user1:x:500:500::/home/user1:/bin/bash
+		user2:x:501:501::/home/user2:/bin/bash	>>UID와 GID가 1씩증가
+	
+
+	* 패스워드 설정 - passwd
+	
+		 #passwd			>> 현재 로그인한 사용자의 계정 변경
+		 #passwd [계정명]		>> [계정명]의 패스워드를 변경 ( root만 가능 )
+		 
+		 -l ( lock )   : 패스워드를 잠가서 로그인이 불가능하도록 설정 
+		 -u ( unlock ) : 패스워드 잠금을 해제
+		 -d ( delete ) : 패스워드를 제거
+		 
+			 
+		 ! 실습
+		 
+		 @root
+		 #cat /etc/shadow
+		 
+		 user2:$6$KxMbgfgS$YPHafWE~		>> 되게 길다 (참고 2.설정파일&디렉터리 67행)
+		 
+		 #passwd -l user2		>>패스워드 잠금
+		 #cat /etc/shadow
+	 
+		 user2:!!$6$KxMbgfgS$~	>> 앞에 '!!'이 추가되어있다.
+		
+		@user1에서 로그인시도 -> 가능
+		@user2에서 로그인시도 -> 불가
+		 
+		 @root
+		 #passwd -u user2		>>잠금 해지
+		 #cat /etc/shadow
+		 
+		 user2:$6$KxMbgfgS$YPHafWE~	>> '!!'이 해지되어있다.
+		 
+		 @user2에서 로그인시도 -> 가능
+		 
+		 
+		 ! 실습
+		 
+		 @root
+		 #cat /etc/shadow
+		 
+		 user1:$6$bUY4gPI9$pMLYKH6PbIgYjNSNJ8Wf03bkFjEKcEQVcaH6cZetIg1dRpgC
+		 j6pKU0IXvVJWPIe3AN76aa5i95/7.tHabQVht1:17613:0:99999:7:::
+		 
+		 @user2
+		 #su user1						>> Switch User  > user1으로 사용자 변경
+		 암호:							>> 비밀번호를 입력해야 한다.
+		 exit로 다시 user2로이동
+		 
+		 @root
+		 #passwd -d user1				>> 비밀번호 제거	 
+		 #cat /etc/shadow 
+		 user1::17613:0:99999:7:::		>> 2번째 필드가 모두 제거되어있다.
+		 
+		 @user2
+		 #su user1		>> 비밀번호 입력없이 switch user에 성공
+		 
+	
+	
+	* 사용자 계정 제거 - userdel
+	
+		[ 사용법 ]
+		
+		#userdel [계정명]				>> 홈디렉터리는 삭제되지 않는다.
+		#userdel -r [계정명]			>> 일반적으로 홈디렉터리까지 포함하여 삭제한다.
+		 
+		
+		
+		! 실습
+		
+		#useradd user100
+		#passwd user100
+		111
+		111
+		
+		#useradd user101
+		#passwd user101
+		111
+		111
+		
+		#userdel user100		
+		#cd /home
+		#ls						>>홈디렉터리가 남아있다.
+		#rm -rf ./user100		>>수동으로 홈디렉터리를 삭제해 주어야한다.
+		
+		#userdel -r user101
+		#cd /home
+		#ls						>>홈디렉터리까지 삭제해준다.
+	
+	
+	
+	
+	
+	
+	* 계정정보 변경 - usermod
+	
+		[ 사용법 ]
+		
+		#usermod [옵션] [계정명]
+
+		
+		[ 옵션 ]
+		
+		- useradd와 동일 ( man 명령어 참조 )
+		
+		
+		! 실습
+		
+		#useradd userEx1
+		#tail -1 /etc/passwd
+		
+		
+		>>user1Ex1의 uid를 1050번으로 변경하고 , 코멘트에는 "Test" ,
+		  로그인시 사용하는 쉘은 bash쉘로 사용자 정보 변경	
+		#usermod -c TEST -u 1050 -s /bin/bash userEx1
+		#tail -1 /etc/passwd
+	
+	
+	
+	
+	* Shadow Password System
+	
+		- shadow파일에 패스워드를 저장하기 위한 방법
+		
+		#pwunconv  						>> shadow기능 비활성화
+		#cat /etc/passwd				>> 2번째 확인
+		#cat /etc/shadow				>> 확인x
+		
+		
+		#pwconv							>> shadow 기능 활성화
+		#cat /etc/passwd				>> 2번째 확인
+		#cat /etc/shadow				>> 확인o
+	
+	
+	
+	
+	
+	* 그룹추가 - groupadd
+	
+		[ 사용법 ]
+		
+		#groupadd [ 그룹명]
+		
+		
+		! 실습
+		
+		#useradd JISOO
+		#useradd JENNY
+		#useradd ROSE
+		#useradd RISA		
+		
+		
+		#groupadd -g 2000 BLACKPINK		 >> gid가 2000인 BLACKPINK그룹 생성
+		#tail -1 /etc/group
+		>> BLACKPINK:x:2000:
+		
+		#groupadd -g 1100 R-MEMBER		>> gid가 1100인 R-MEMBER그룹 생성
+		#groupadd -g 1200 J-MEMBER		>> gid가 1200인 J-MEMBER그룹 생성
+		
+		#tail -3 /etc/group
+		BLACKPINK:x:2000:
+		R-MEMBER:x:1100:
+		J-MEMBER:x:1200:
+		
+		#usermod -g BLACKPINK -G J-MEMBER JISOO	 	
+		>>JISOO계정을 BLACKPINK주 그룹에 추가 ,  J-MEMBER 보조 그룹에 추가
+		
+		#usermod -g BLACKPINK -G J-MEMBER JENNY
+		>>JENNY계정을 BLACKPINK주 그룹에 추가 ,  J-MEMBER 보조 그룹에 추가
+		
+		#usermod -g BLACKPINK -G R-MEMBER ROSE
+		>>ROSE계정을 BLACKPINK주 그룹에 추가 ,  R-MEMBER 보조 그룹에 추가
+		
+		#usermod -g BLACKPINK -G R-MEMBER RISA
+		>>RISA계정을 BLACKPINK주 그룹에 추가 ,  R-MEMBER 보조 그룹에 추가
+		
+		
+		
+		@주 그룹을 확인하는 방법
+		
+			1)
+			
+			#cat /etc/passwd | grep "계정명" 		>>GID를 확인
+			#cat /etc/group | grep "방금찾은GID"
+			
+			!Ex)
+			#cat /etc/passwd | grep "JISOO"
+			JISOO:x:902:2000:
+			
+			#cat /etc/group | grep "2000"
+			
+			
+			2)
+			
+			#groups "계정명"
+			
+			!Ex1)
+			#groups "JISOO"
+		
+		
+		@보조 그룹 확인
+		
+			1) 
+			#cat /etc/group		>> group 파일 확인
+			
+			2)
+			#groups "계정명"
+
+	
+	
+	* 그룹정보수정 - groupmod
+	
+		[ 사용법 ]
+		
+		#groupmod [옵션] [그룹명]
+		
+		
+		! 실습
+		
+		#groupadd -g 3000 TestGroup			>>gid가3000인 TestGroup생성
+		#tail -1 /etc/group					>>확인
+		
+		#groupmod -g 2999 TestGroup			>>gid를 2999로 변경
+		#tail -1 /etc/group					>>확인
+		
+	
+	
+	* 그룹삭제 - groupdel
+	
+		- 비어 있는 그룹을 삭제한다.
+	
+		[ 사용법 ]
+		
+		#groupdel [그룹명]
+		
+		! 실습
+		
+		#tail -1 /etc/group		>>확인
+		#groupdel TestGroup		>>testGroup삭제
+		#tail -1 /etc/group		>>확인
+
+
+	
+	* 그룹설정작업 - gpasswd
+	
+		- 특정 그룹에 사용자를 추가하거나 제거하고
+		  패스워드를 설정하는 작업
+		  
+		
+		[ 사용법 ]
+		
+		#gpasswd [옵션] [대상]
+		
+		[ 옵션 ]
+		
+		-a : 그룹 멤버를 추가
+		-d : 그룹 멤버를 제거
+		-r : 패스워드를 제거
+		-M : 그룹 구성원을 새로 지정
+		
+		#gpasswd -a [유저] [그룹명]
+		#gpasswd -d [유저] [그룹명]
+		#gpasswd -M [유저1],[유저2],[유저3],유저[N] [그룹명]
+		#gpasswd -r [그룹명]
+		
+		
+		
+		! 실습
+			
+		#groupadd TestGroup			>>TestGroup생성
+		#cat /etc/gshadow			>>2번째 필드에 !확인
+		
+		#gpasswd TestGroup			>>그룹 비밀번호 설정
+		111
+		111
+		
+		#cat /etc/gshadow			>>2번째 필드에 암호화된 값 확인
+		
+		
+		#gpasswd -r TestGroup		>>패스워드 제거
+		#cat /etc/gshadow			>>2번째 필드에 공백
+		
+		
+		! 실습		>> 보류
+		
+		#useradd Testuser1
+		#useradd Testuser2
+		#useradd Testuser3
+		#useradd Testuser4
+		
+		#gpasswd -a Testuser1 TestGroup			>>TestGroup에 Testuser1추가
+		#cat /etc/group
+		
+		#gpasswd -a Testuser2 TestGroup			>>TestGroup에 Testuser2추가
+		#cat /etc/group
+		
+		#gpasswd -d Testuser1 TestGroup			>>TestGroup에 Testuser1제거
+		#cat /etc/group
+		
+		#gpasswd -M Testuser1,Testuser2,Testuser3,Testuser4 TestGroup 	>>TestGroup구성원을 새로 지정
+		#cat /etc/group
+	

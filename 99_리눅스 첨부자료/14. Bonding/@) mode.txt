@@ -1,0 +1,20 @@
+bonding - 네트워크 이중화
+Linux kernel에 내장된 기술로 2개 이상의 Network Interface Card를 논리적으로 하나의 interface 로 
+묶어서 NIC의 물리적 장애에 대응하거나 처리량을 늘리는 기술이다.
+본딩 모드 종류
+
+Mode 0 (balance-rr) balance-round robine ( 2개의 NIC을 순차적으로 분배 + Fault Tolerance)
+회선이 2회선일 경우 트래픽을 같이 사용할 수 있어 대역폭을 분산시키는데 효율적
+ 
+Mode 1 (active-backup) 일반 기업들이 많이 쓰고, 흔히들 말하는 네트워크 이중화에 대한 부분으로 사용
+실제 사용시에는 2개의 백본에 2개의 NIC에 연결이 되며, 활성화 되어있는 NIC에 문제 발생시 
+예비 NIC으로 이첩시키는 기능을 합니다.
+
+Mode 5 (balance-tlb)
+로드 발랜싱 정책으로 밖으로 내보내지는 트래픽은 분산되어 송출되며, 들어오는 트래픽은
+Active되어있는 NIC으로 패킷을 받음. 만일 Active 되어있는 NIC의 문제로 패킷을 받지 못하면 또다른 
+NIC이 실패한 NIC의 MAC Address를 물려받게 됨
+
+Mode 6 (balance-alb) 들어오는 트래픽을 분산 처리하여 받음. 
+bond에서 트래픽이 많이 존재하지 않는 NIC으로 분산.
+들어오는 로드 발렌싱은 ARP negotiation을 통해서 수행.

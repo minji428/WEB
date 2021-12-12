@@ -1,0 +1,262 @@
+### NC , Telnet , SSH , VNC ###
+
+
+
+	* NC ( NetCat )
+	
+		- 네트워크로 연결된 데이터를 사용하는 툴
+		- Cat 표준 입출력
+		- nc 네트워크 입출력
+		
+		
+		설치방법
+		#yum install -y nc
+		
+		+@ iptables(방화벽)이 차단하기 때문에 방화벽을 내리고 실습
+		#service iptables stop
+		#chkconfig iptables off
+		
+		
+		[ 사용법 ]
+		
+		@Server-A
+		
+		#nc -l [포트번호]
+		
+		#nc -l 2000			>> 포트 활성화 ( l: Listen )
+							>> nc프로그램이 2000번 포트를 활성화하고 대기상태
+		
+		@Client-Linux
+		
+		#yum install -y nc              >> 클라이언트와 서버의 프로그램이 같다.
+		
+		#nc [아이피주소] [포트번호]
+		
+		#nc 100.100.100.100 2000		>>100.100.100.100의 2000번 포트로 연결
+		
+		
+		! 실습
+		
+		@Server-A						@Client-Linux
+		#nc -l 2000						#nc 100.100.100.100 2000
+		
+		데이터전송		 <<<<<<<<<<<<		데이터입력
+		
+										Ctrl+D 			>>종료
+		
+		
+		! 실습
+		
+		@Server-A							@Client-Linux
+		# nc -l 3000 < /etc/passwd		#nc 100.100.100.100 3000 > Server-A_passwd
+
+		>>Server-A에서 임의의 포트(3000)를 활성화하고 Server-A에 위치한
+		  /etc/passwd파일을 Client-Linux에서 Server-A_Linux_passwd라는 이름으로 출력
+		
+		
+		
+		포트 스캔
+		
+		[ 사용방법 ]
+		
+		#nc -z [아이피] [특정 포트]			>> 특정 포트만 스캐닝
+		#nc -z [아이피] [시작범위-종료범위] 		>> 범위 포트 스캐닝
+		
+		
+		! 실습
+		
+		@Server-A , Client-Linux (Xshell에서 진행)
+		
+		
+		@Client-Linux
+		#nc -z 100.100.100.100 22		>> o
+		#nc -z 100.100.100.100 23		>> x
+		#nc -z 100.100.100.100 80		>> x
+		#nc -z 100.100.100.100 10-100	>> 22번
+		
+		@Server-A
+		#yum install -y httpd			>> 웹서버 설치
+		#service httpd start			>> 웹서버 실행
+		
+		
+		@Client-Linux
+		#nc -z 100.100.100.80			>> o
+		#nc -z 100.100.100.10-100		>> 22번, 80번
+	
+	
+	
+	
+	* Telnet 
+	
+		- 원격접속 프로그램
+		- 데이터가 평문으로 전송되어 보안에 취약점이 많아
+		  현재는 SSH로 대체되어 사용되지 않는다.
+		- tcp / 23번 포트를 사용
+		- xinetd 기반으로 동작하는 데몬
+		
+		
+		
+		! 서버 구축
+		
+		#yum install -y telnet-server	>> telnet 서버용 패키지
+										>> xinetd 데몬도 함께 설치된다.
+		
+		#vi /etc/xinetd.d/telnet		>> telnet 주설정파일
+		--------------------------
+		12번 라인  disable = no
+		
+		wq!
+		-------------------------
+		
+		>> telnet은 xinetd데몬이 활성화를 시켜주기 때문에,
+		xinetd.d 디렉터리에 위치해 있으며 , 서비스가 시작 될떄
+		파일의 내용중 disable 항목을 확인하여 해당프로그램의 
+		동작여부를 결정한다.
+		
+		[#service iptables status]		>> 방화벽상태 확인
+		[#service iptables stop]		>> 방화벽이 올려있으면 해지
+		
+		#service xinetd start			>> 서비스 가동
+		
+		
+		[#useradd telnetuser]			>>텔넷서비스 이용계정 생성
+		[#passwd telnetuser]			>>비밀번호 설정
+		111
+		
+		
+		! 서비스 이용
+		
+		@ Client-Linux
+		#yum install -y telnet 		>> 텔넷 클라이언트 프로그램
+		
+		[#service iptables status]	>> 방화벽 상태 확인
+		[#service iptables stop]	>> 방화벽 해제
+		
+		
+		#telnet [서버ip]			>>원격 접속
+		
+		Ex)
+		#telnet 100.100.100.100
+		
+		
+		+@
+		#telnet [ip] [port]			>>port번호가 생략되면 기본값인 23번이 사용된다.
+		
+		Ex)
+		#telnet 100.100.100.100 23
+		
+		
+		@ Client-Window
+		
+		
+		-> 왼쪽 하단에 window 아이콘 클릭
+		-> 검색메뉴얼에 방화벽 입력
+		-> windows 방화벽 클릭
+		-> windows 방화벽 설정 또는 해제 클릭
+		-> windows 방화벽 사용안함으로 변경
+		
+		
+		-> 제어판
+		-> 프로그램 클릭
+		-> Windows 기능 사용/사용안함 클릭
+		-> 텔넷 클라이언트 선택
+		-> 확인 클릭
+		
+		-> window+R 
+		>telnet [ip]
+	
+	
+	
+	* VNC ( Virtual Network Computing ) 
+	
+		- 그래픽 환경 ( GUI )로 동작하는 운영체제를 
+		  원격에서 제어할때 사용하는 프로그램
+		  
+		
+		
+		! 서버 구축
+		@Server-A
+		#yum install -y tigervnc-server		>>VNC서버용 패키지
+		
+		
+		#vi /etc/sysconfig/vncservers		>>VNC 서버 설정파일
+		----------------------------------
+		맨 하단에 아래 내용을 추가
+		
+		VNCSERVERS="1:root"					>> Display번호/계정명
+		VNCSERVERARGS[1]="-geomtry 800x600" >> 해상도 옵션 ( 800 x 600)
+		
+		:wq
+		------------------------------------
+		
+		
+		#vncpasswd			>> root계정으로 vnc 접속시 사용할 패스워드 지정
+		
+		[#service iptables status]
+		[#service iptables stop]
+		
+		#service vncserver start		>> 서비스 가동
+		
+		
+		
+		! 서비스 이용
+		
+		@Client-Linux
+		
+		#yum install -y tigervnc		>>클라이언트 패키지 설치
+		
+		[#service iptables status]
+		[#service iptables stop]
+		
+		->왼쪽 상단에 프로그램
+		->인터넷
+		->Tiger VNC Viewer클릭
+		
+		[ip:port]입력후 연결
+		Ex)
+		100.100.100.100:5901
+		
+		>>VNC 서버는 기본적으로 5900번 포트를 사용
+		diplay + 기본포트 = 서비스 포트
+		
+		Ex)
+		1번 display -> 5901번 포트를 이용해서 접속
+		2번 display -> 5902번 포트를 이용해서 접속
+		
+		
+		@Client-Window
+		
+		[방화벽 해지 (위에 참고)]
+		
+		-> http:>>tigervnc.org 접속
+		-> Downloads 
+		-> here 링크 클릭
+		-> 제일 하단에 위치해 있는 Window용 프로그램 다운로드
+		   (tigervnc64-1.8.80.exe)
+		-> 설치 마법사에 따라 설치 진행
+		-> TigerVNC Viewer 클릭
+		-> [ip:port]입력후   Ex) 100.100.100.100:5901 
+		-> Connect
+		-> 패스워드 입력후 원격제어
+	
+	
+	
+	* SSH 
+	
+		- 암호화 원격제어(SSH) 및 파일을 전송하는(SCP) 프로그램
+		- 기본적으로 설치 및 서비스가 제공되어져 있다.
+	
+		
+		! 서비스 사용
+		
+		#ssh [계정명]@[ip주소 or 도메인주소]
+		#ssh [ip주소 or 도메인주소]
+		
+		Ex)
+		#ssh telnetuser@100.100.100.100 >> telnetuser계정으로 접속
+		#ssh root@100.100.100.100		>> root 계정으로 접속
+		#ssh 100.100.100.100			>> 계정명을 입력하지 않으면 root계정으로 접속
+		
+		
+		
+	

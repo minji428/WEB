@@ -1,0 +1,217 @@
+### 부팅프로세스 ###
+
+	** 부팅 과정에 대한 이해 **
+	 1.부팅이 안될때(디스크 파일)
+	 2.root 비밀번호 찾기
+	 3.부트로더 암호 걸기
+	 4.x-window 설치
+
+	
+	1) POWER ON
+	
+	- 전원이 들어오면 CPU가 ROM ( Read Only Memory )에 저장된
+	  BIOS ( Base Input/Ouput System ) 을 실행
+	- BIOS는 POST ( Power On Self Test / 자체진단 기능 )을 수행하며
+	  하드웨어 장치들을 하나씩 인식하여 이상유무를 판단하다.
+	- 하드디스크를 인식하여 첫번째 섹터 ( Sector )에서
+	  MBR ( Master Boot Record )를 읽어 부트로더가 ( Boot Loader )가 실행된다.
+	
+	
+	2) 부트 로더
+	
+	- 리눅스 설치 시 기본값으로 설치되는 부트로더 -> GRUB
+	- 부팅 메뉴 출력 ( /etc/grub.conf )
+	  메뉴를 선택하여 설정된 옵션에 따라 운영체제를 부팅한다.
+	  ( 커널이미지파일 (vmliuz)와 램디스크 초기화 이미지(initrd.img)
+	   파일이 메모리에 로딩되어 운영체제가 실행된다.
+	- 부트로더는 init프로세스를 실행한다.
+	
+	
+	3) init프로세스
+
+	- init프로세스는 /etc/inittab파일을 참조하여
+	  설정된 RunLevel을 확인하여 부팅 레벨 (실행 환경)을 설정한다.
+	
+	  #vi /etc/inittab  >> 과거에는 해당파일이 중요한 역할을 하였으나 현재는 런레벨만 설정하는 파일이 되었다.
+	
+	  [ Run Level ] 
+	
+	  - '시스템을 어떠한 방식으로 부팅할 것인가'를 분류해 놓은 것
+	
+		0 - 시스템 종료   
+		1 - 싱글 유저 모드 ( 안전모드, 복구모드 )
+		2 - 네트워크 기능이 없는 다중 사용자 모드
+		3 - 네트워크 기능이 있는 다중 사용자 모드 ( 기본값 )
+		4 - 사용하지 않음 ( unused )
+		5 - X window 환경 ( GUI환경 )
+		6 - 시스템 재부팅
+	
+	- etc/rc.d/rc#.d 디렉토터리에 위치한 스크립트가 실행된다.
+
+		 ex) 런레벨 1 -> /etc/rc.d/rc1.d 
+			 런레벨 3 -> /etc/rc.d/rc3.d  
+			
+			
+		  [ 스크립트 파일 형식 ]
+		  
+		  [S|K] [우선순위] [데몬명] 
+		    S      55    sshd
+			K      87   restorecond
+			
+			
+		  S(Start) - 부팅 시 실행할 스크립트 (실행O)
+		  K(Kill)  - 종료 시 실행할 스크립트 (실행X)	
+	
+	! 실습 (부팅관련 파일이 잘못되었을 경우 부팅이 되지 않는다. > 문제 해결)
+	
+
+	#vi /etc/inittab		
+	----------------
+	맨 마지막 행 	(id:3:initdefault:)
+	id:5:initdefault:				>>3->5로 수정	
+									>>gui환경을 구현하는 패키지가
+									  설치되어 있지 않기 때문에
+									  재부팅시에 부팅이 제대로 되지 않는다.
+									  다시부팅해도 이 상황이 반복된다.
+	:wq
+	-----------------
+	
+	#init 6							>>정상적인 부팅x
+	
+	
+	-> 다시 접속시도 ( 접속시 'b'를 연속으로 입력 )		>> 화면 활성화 시켜놓고 연타
+	-> 메뉴 편집 CentOS 6 (2.6 ~ )			>> 'e'를 입력
+	-> 두번째 메뉴 Kernel /vmlinuz-2.6.32~	>> 'e'를 입력
+	-> 주어지는 명령어에서 맨뒤에서 한칸을 띄우고
+	   1 혹은 single입력후 enter
+	-> 두번째 메뉴 Kernel /vmlinuz-2.6.32 ~ >> 'b'를 입력
+
+	
+	~ 루트의 비밀번호 없이 루트계정으로 싱글모드 진입 ~
+
+
+	#vi /etc/inittab		
+	----------------
+	맨 마지막 행 	(id:5:initdefault:)
+	id:3:initdefault:					>>5->3으로 변경
+	
+	:wq
+	-----------------
+	
+	#init 6								>>정상적인 부팅o
+
+	
+	
+	
+	
+	
+	! 실습 ( root패스워드 분실시 root패스워드를 찾아야만 한다 > root패스워드 찾기 )
+	
+	-> 다시 접속시도 ( 접속시 'b'를 연속으로 입력 )
+	-> 메뉴 편집 CentOS 6 (2.6 ~ )			>> 'e'를 입력
+	-> 두번째 메뉴 Kernel /vmlinuz-2.6.32~	>> 'e'를 입력
+	-> 주어지는 명령어에서 맨뒤에서 한칸을 띄우고
+	   1 혹은 single입력후 enter
+	-> 두번째 메뉴 Kernel /vmlinuz-2.6.32 ~ >> 'b'를 입력
+
+	~ 루트의 비밀번호 없이 루트계정으로 싱글모드 진입 ~
+	
+	#passwd
+	111111
+	111111
+	
+	
+	
+	
+	
+	
+	! 실습 ( 부트로더 암호 설정 )
+	
+	- 부트로더에 설정한 패스워드를 입력해야 옵션 편집을 할 수 있다.
+	
+	
+	#grub											>> 부트 로더 설정 명령어
+	
+	grub>md5crypt									>> 패스워드 설정 (md5암호화)
+	password:111									>> 패스워드 입력
+	111
+	Encrypted: $1$3BZwr/$s6PMRkGRQ/Ld7Kp/RPWV./		>> 암호화된 패스워드를 복사
+	└ $1$b3rL91$qpBAuAmNQEBbHV9f0tH6N1 >> 내거
+	grub>quit										>> 종료
+	
+	
+	#vi /etc/grub.conf						>> 부팅메뉴 설정파일 (=/boot/grub/grub.conf)
+	-----------------------
+	13번행
+	password --md5 $1$3BZwr/$s6PMRkGRQ/Ld7Kp/RPWV./	>> 암호 설정
+	
+	:wq!
+	-----------------------
+	
+	#init 0
+	
+	-> 메뉴편집에서 'p'를 입력하고 
+	   패스워드를 입력해야만
+	   부트로더의 메뉴편집이 가능하다.
+
+
+
+	
+	
+	
+	
+
+	* X-Window 설치
+	
+	#yum grouplist
+	#yum groupinstall -y "X window System" "Desktop" "Fonts" "Korean Support"
+	
+
+	
+	
+	
+	
+	+@VM tools 설치
+	
+	
+	#init 5				( X-Window 환경에서 진행 )
+	
+	-> 상단메뉴 VM
+	-> Install VmTools 클릭
+	-> 바탕화면에 CD모양 VMTools 생성되는지 확인
+	  ( CentOS가 생성이 되면 
+	   	-> 위쪽 VM태그 
+		-> Cancle VmTools 클릭
+		-> 다시 Install VMware 클릭
+	  )
+	  
+	-> 프로그램 - 시스템도구 - 터미널 (명령어 입력 창)
+	
+	
+	#df -h									>> 디스크 마운트 정보 확인
+												VMtools가 /media/Vmware Tools에 
+												위치해 있는 것을 확인 >> 안되어있으면 cancle 후, 다시 시도
+												
+	#cd /media/"VMware Tools"				>> 디렉터리로 이동
+    #ls										>> VMwareTools~~~.tar.gz확인
+	#tar xvf VMwareTools~~~.tar.gz -C /root	>> /root 디렉터리에
+											  압축 및 아카이빙 해제
+	#cd /root								>> /root 디렉터리로 이동
+	#ls										>> vmware-tools-distrib 디렉터리 확인
+	#cd ./vmware-tools-distrib				>> 디렉터리로 이동
+	#./vmware-install.pl -default			>> 기본옵션으로 설치 진행
+	#reboot									>> 재부팅후 설정 적용
+	
+	#init 5
+	- Host OS와 GuestOS의 파일 공유 확인 -		>> drag & drop
+	
+	스냅샷(x-window 설치 직후)
+	
+	
+	
+	
+	
+	** Xshell 내부 파일 윈도우로 가져오기
+	>> sz 파일명
+	
+	

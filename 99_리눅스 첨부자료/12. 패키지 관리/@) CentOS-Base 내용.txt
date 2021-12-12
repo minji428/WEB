@@ -1,0 +1,62 @@
+/etc/yum.repo.d/CentOS-Base.repo	(CentOS원본 패키지 저장소 파일)
+
+[base] - CentOS 6버전이 출시되는 시점에서 제작된 "원본 패키지" 저장소 위치
+[updates] - 버그 수정이나, 기능을 개선한 패키지 "업데이트 패키지" 저장소 위치
+[extras] - 추가 배포되는 패키지는 "추가 패키지" 저장소 위치
+
+//추가 기능 패키지 저장소 [centosplus] 저장소는 기본적으로 사용하지 않는다.
+  enable 0 없는 것과 동일	
+
+전세계 수백개의 repository사이트가 있으며 대학, 기업, 연구소등에서
+동일한 repository 를 제공하며, 이렇게 동일한 저장소를 미러(mirror) site라 하며 
+해당 URL에서 (http://www.cenos.org/download/mirros/) 미러사이트 확인이 가능하다.
+
+/etc/yum.repo.d/CentOS-Base.repo 구조  
+#cat /etc/yum.repo.d/CentOS-Base.repo 
+  
+[] (대괄호)
+ -  - 저장소 식별자 [base], [update], [extras]
+ - 여러개의 저장소를 추가 할 수 있으며 각 식별자는 독립적으로 존재
+
+# 
+ - 주석, 설명  
+ - 설정파일에 영향을 주지 않음
+
+name 
+ - 저장소의 이름
+ - 보기 편한 이름으로 지정
+
+mirrorlist
+ - baseurl에 설정 값(URL)이 생략되어 있으면, 대신 mirrorlist에 적혀 있는 URL이 사용된다.
+   해당 mirrorlist는 전 세계에 분포된 여러개의 repository와 연결되어 있다.
+   
+   RHEL 은 레드햇이 제공하는 중앙 저장소의 URL 이 고정되어 있지만 CentOS 는 나라별로 
+   미러 사이트들이 다르므로 빠른 속도로 저장소에 접속하려면 CentOS 를 설치한 국가에 따라 
+   저장소 URL이 달라져야 한다. mirrorlist 가 설정되어 있으면 fastestmirror 라는 
+   yum 플러그인이 동작하여 가장 빠른 미러 사이트를 찾아서 저장소 URL 을 변환해 준다.
+
+baseurl
+ - URL이 적혀 있는 부분으로, http, ftp, file 중 한가지가 올 수 있다.
+  
+   패키지를 설치하거나 업데이트시 사용할 기본 저장소의 URL 을 지정하며 fastestmirror 
+   를 사용하여 동적으로 저장소를 찾지 않고 고정된 URL 의 저장소를 사용할 경우 mirrorlist 
+   를 주석 처리하고 baseurl 을 설정해 주면 된다. 
+  
+gpgcheck
+ - 패키지 GPG 서명을 확인할지 여부를 1(사용), 0(사용안함)으로 지정할 수 있다.
+ - 1로 지정할 경우 gpgkey 항목을 반드시 설정 해야 한다.
+
+gpgkey
+ - 아스키 GPG키가 들어 있는 저장소의 URL이 적혀 있어야 한다.
+
+  gpgcheck 를 할 경우 사용할 서버의 공개키 경로를 설정한다. 일반적으로 저장소를 제공하는 
+  측에서 GPG 키를 같이 배포하므로 저장소 추가시 공개키를 같이 받아서 설정해 주면 된다. 
+
+enabled
+- 저장소를 사용할 지 여부 1(사용), 0(사용안함)를 지정.
+- 생략할 경우 기본 값은 1
+
+GPG(Gnu Privacy Guard)서명은 rpm 패키지 인증 시 암호화된 서명을 사용하는 방법
+CentOS 프로젝트에서 제공하는 rpm 패키지는 GPG서명을 함으로써 잘못된 패키지가
+설치되는 일을 방지 한다. (http://www.gnupg.org)
+ 
